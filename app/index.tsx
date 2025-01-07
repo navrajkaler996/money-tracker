@@ -11,7 +11,7 @@ function HomeScreen({ navigation }: any) {
       <View style={styles.gradientContainer}>
         <LinearGradient colors={["#a8ff78", "#78ffd6"]} style={styles.gradient}>
           <View style={styles.content}>
-            <Text>asdsadas</Text>
+            <Text style={{ fontFamily: "Aller_Bd" }}>asdsadas</Text>
           </View>
         </LinearGradient>
       </View>
