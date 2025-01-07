@@ -1,7 +1,8 @@
 import { Stack } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { StyleSheet } from "react-native";
+
 import { useFonts } from "expo-font";
+import { View, Text, StyleSheet, Dimensions } from "react-native";
 
 export default function AppLayout() {
   const [fontsLoaded, fontError] = useFonts({
@@ -14,26 +15,28 @@ export default function AppLayout() {
   }
 
   return (
-    <LinearGradient colors={["#a8ff78", "#a8ff78"]} style={styles.container}>
+    <View style={styles.container}>
       <Stack
         screenOptions={{
           headerStyle: {
-            backgroundColor: "transparent", // Make header background transparent
+            backgroundColor: "transparent",
           },
-          headerTintColor: "#fff", // Optional: Set header text color to contrast with gradient
+
           headerTitleStyle: {
-            fontWeight: "bold",
+            fontFamily: "Aller_Bd",
+            color: "#000",
           },
         }}>
         <Stack.Screen name="index" options={{ title: "My App" }} />
         {/* Add other Stack.Screen components here for top-level routes if needed */}
       </Stack>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#a8ff78",
   },
 });
