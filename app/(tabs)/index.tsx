@@ -42,7 +42,7 @@ function HomeScreen({ navigation }: any) {
             style={styles.cardGradient}>
             <Text style={[styles.cardHeading]}>Grocery</Text>
             <Image
-              source={require("../assets/images/icons/grocery.png")}
+              source={require("../../assets/images/icons/grocery.png")}
               style={styles.icon}
             />
             <Text style={[styles.cardNumbers]}>$532.36</Text>
@@ -54,7 +54,7 @@ function HomeScreen({ navigation }: any) {
             style={styles.cardGradient}>
             <Text style={[styles.cardHeading]}>Transport</Text>
             <Image
-              source={require("../assets/images/icons/transport.png")}
+              source={require("../../assets/images/icons/transport.png")}
               style={styles.icon}
             />
             <Text style={[styles.cardNumbers]}>$123.06</Text>
@@ -66,7 +66,7 @@ function HomeScreen({ navigation }: any) {
             style={styles.cardGradient}>
             <Text style={[styles.cardHeading]}>Food</Text>
             <Image
-              source={require("../assets/images/icons/food.png")}
+              source={require("../../assets/images/icons/food.png")}
               style={styles.icon}
             />
             <Text style={[styles.cardNumbers]}>$200</Text>
@@ -78,7 +78,7 @@ function HomeScreen({ navigation }: any) {
             style={styles.cardGradient}>
             <Text style={[styles.cardHeading]}>Gym</Text>
             <Image
-              source={require("../assets/images/icons/gym.png")}
+              source={require("../../assets/images/icons/gym.png")}
               style={styles.icon}
             />
             <Text style={[styles.cardNumbers]}>$70</Text>
@@ -93,6 +93,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
+
     backgroundColor: "#fff",
   },
   gradientContainer: {
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap", // Allow wrapping to multiple rows
     justifyContent: "space-between", // Space items evenly
-    paddingHorizontal: 10, // Add some padding on the sides
+    // paddingHorizontal: 10, // Add some padding on the sides
   },
   cardGradient: {
     width: windowWidth * 0.25, // Adjust card width

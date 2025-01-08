@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { Redirect, Stack } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { useFonts } from "expo-font";
@@ -15,22 +15,9 @@ export default function AppLayout() {
   }
 
   return (
-    <View style={styles.container}>
-      <Stack
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: "transparent",
-          },
-
-          headerTitleStyle: {
-            fontFamily: "Aller_Bd",
-            color: "#000",
-          },
-        }}>
-        <Stack.Screen name="index" options={{ title: "My App" }} />
-        {/* Add other Stack.Screen components here for top-level routes if needed */}
-      </Stack>
-    </View>
+    <Stack>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    </Stack>
   );
 }
 
