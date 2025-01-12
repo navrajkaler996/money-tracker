@@ -1,9 +1,9 @@
+import { useCreateUserMutation } from "@/services/userApi";
 import { COLORS } from "@/utils/constants";
 import { LinearGradient } from "expo-linear-gradient";
 import { Redirect } from "expo-router";
 import { useState } from "react";
 import {
-  Button,
   Dimensions,
   Image,
   Pressable,
@@ -18,18 +18,18 @@ const windowWidth = Dimensions.get("window").width;
 
 function RegistrationScreen({ navigation }: any) {
   const [form, setForm] = useState({
-    firstName: "",
+    first_name: "",
     email: "",
     password: "",
-    confirmPassword: "",
     errors: {
-      firstName: false,
+      first_name: false,
       email: false,
       password: false,
-      confirmPassword: false,
     },
   });
   const [isRegistered, setIsRegistered] = useState(false);
+
+  const [createUser, { isLoading, error, data }] = useCreateUserMutation();
 
   if (isRegistered) return <Redirect href={"/(tabs)"} />;
 
@@ -44,14 +44,14 @@ function RegistrationScreen({ navigation }: any) {
   const validateForm = () => {
     let valid = true;
     const newErrors = {
-      firstName: false,
+      first_name: false,
       email: false,
       password: false,
       confirmPassword: false,
     };
 
-    if (!form.firstName) {
-      newErrors.firstName = true;
+    if (!form.first_name) {
+      newErrors.first_name = true;
       valid = false;
     }
     if (!form.email || !/\S+@\S+\.\S+/.test(form.email)) {
@@ -60,10 +60,6 @@ function RegistrationScreen({ navigation }: any) {
     }
     if (!form.password) {
       newErrors.password = true;
-      valid = false;
-    }
-    if (form.password !== form.confirmPassword) {
-      newErrors.confirmPassword = true;
       valid = false;
     }
 
@@ -77,7 +73,11 @@ function RegistrationScreen({ navigation }: any) {
 
   const handleSubmit = () => {
     if (validateForm()) {
-      console.log("Form is valid");
+      createUser({
+        email: form.email,
+        first_name: form.first_name,
+        password: form.password,
+      });
       setIsRegistered(true);
     } else {
       console.log("Form is invalid");
@@ -120,13 +120,13 @@ function RegistrationScreen({ navigation }: any) {
         </View>
         <View style={styles.formContainer}>
           <TextInput
-            style={[styles.input, form.errors.firstName && styles.inputError]}
+            style={[styles.input, form.errors.first_name && styles.inputError]}
             placeholder="First Name"
             placeholderTextColor="#666"
-            value={form.firstName}
-            onChangeText={(text) => handleChange("firstName", text)}
+            value={form.first_name}
+            onChangeText={(text) => handleChange("first_name", text)}
           />
-          {form.errors.firstName && (
+          {form.errors.first_name && (
             <Text style={styles.errorText}>First name is required</Text>
           )}
 
