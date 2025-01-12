@@ -16,20 +16,22 @@ import { TextInput } from "react-native";
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
-function WelcomeScreen({ navigation }: any) {
+function RegistrationScreen({ navigation }: any) {
   const [form, setForm] = useState({
+    firstName: "",
     email: "",
     password: "",
+    confirmPassword: "",
     errors: {
+      firstName: false,
       email: false,
       password: false,
+      confirmPassword: false,
     },
   });
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isRegistered, setIsRegistered] = useState(false);
 
-  // if (isLoggedIn) return <Redirect href={"/(tabs)"} />;
-
-  if (!isLoggedIn) return <Redirect href={"/registration"} />;
+  if (isRegistered) return <Redirect href={"/(tabs)"} />;
 
   const handleChange = (field: any, value: any) => {
     setForm((prevForm) => ({
@@ -41,14 +43,27 @@ function WelcomeScreen({ navigation }: any) {
 
   const validateForm = () => {
     let valid = true;
-    const newErrors = { email: false, password: false };
+    const newErrors = {
+      firstName: false,
+      email: false,
+      password: false,
+      confirmPassword: false,
+    };
 
+    if (!form.firstName) {
+      newErrors.firstName = true;
+      valid = false;
+    }
     if (!form.email || !/\S+@\S+\.\S+/.test(form.email)) {
       newErrors.email = true;
       valid = false;
     }
     if (!form.password) {
       newErrors.password = true;
+      valid = false;
+    }
+    if (form.password !== form.confirmPassword) {
+      newErrors.confirmPassword = true;
       valid = false;
     }
 
@@ -59,9 +74,11 @@ function WelcomeScreen({ navigation }: any) {
 
     return valid;
   };
+
   const handleSubmit = () => {
     if (validateForm()) {
       console.log("Form is valid");
+      setIsRegistered(true);
     } else {
       console.log("Form is invalid");
     }
@@ -103,6 +120,17 @@ function WelcomeScreen({ navigation }: any) {
         </View>
         <View style={styles.formContainer}>
           <TextInput
+            style={[styles.input, form.errors.firstName && styles.inputError]}
+            placeholder="First Name"
+            placeholderTextColor="#666"
+            value={form.firstName}
+            onChangeText={(text) => handleChange("firstName", text)}
+          />
+          {form.errors.firstName && (
+            <Text style={styles.errorText}>First name is required</Text>
+          )}
+
+          <TextInput
             style={[styles.input, form.errors.email && styles.inputError]}
             placeholder="Email"
             placeholderTextColor="#666"
@@ -126,7 +154,7 @@ function WelcomeScreen({ navigation }: any) {
           )}
 
           <Pressable style={styles.button} onPress={handleSubmit}>
-            <Text style={styles.buttonText}>Login</Text>
+            <Text style={styles.buttonText}>Register</Text>
           </Pressable>
         </View>
       </LinearGradient>
@@ -144,13 +172,14 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    gap: 70,
   },
   formContainer: {
     width: windowWidth,
     alignItems: "center",
     gap: 20,
-    position: "absolute",
-    bottom: 270,
+    // position: "absolute",
+    // bottom: windowWidth * 0.4,
   },
   input: {
     width: windowWidth * 0.7,
@@ -162,7 +191,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     paddingLeft: 10,
   },
-
   button: {
     width: windowWidth * 0.7,
     height: 40,
@@ -187,18 +215,14 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     alignItems: "center",
-    position: "absolute",
-    top: 150,
-    gap: 30,
+    // position: "absolute",
+    // top: windowHeight * 0.15,
+    gap: 20,
   },
   image: {
     width: 150,
     height: 150,
-  },
-  text: {
-    fontFamily: "Aller_It",
-    fontSize: 20,
-    letterSpacing: 0.5,
+    resizeMode: "contain",
   },
   headingsContainer: {
     alignItems: "center",
@@ -214,6 +238,11 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
   },
+  text: {
+    fontFamily: "Aller_It",
+    fontSize: 20,
+    letterSpacing: 0.5,
+  },
 });
 
-export default WelcomeScreen;
+export default RegistrationScreen;
