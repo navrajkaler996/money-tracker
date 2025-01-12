@@ -1,9 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  ActivityIndicator,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useGetTransactionsByUserIdQuery } from "@/services/transactionApi";
 import { useGetCategoriesQuery } from "@/services/categoryApi";
 import CategoryContainer from "@/components/CategoryContainer";
+
+import { COLORS } from "@/utils/constants";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
@@ -12,12 +20,14 @@ function HomeScreen({ navigation }: any) {
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [ledger, setLedger] = useState([]);
 
-  const { data: transactionsData } = useGetTransactionsByUserIdQuery({
-    userId: 1,
-    month: 12,
-    year: 2024,
-  });
-  const { data: categoriesData } = useGetCategoriesQuery(null);
+  const { data: transactionsData, isLoading: transactionIsLoading } =
+    useGetTransactionsByUserIdQuery({
+      userId: 1,
+      month: 12,
+      year: 2024,
+    });
+  const { data: categoriesData, isLoading: categoriesIsLoading } =
+    useGetCategoriesQuery(null);
 
   //Creating expenses for user
   useEffect(() => {
@@ -59,6 +69,19 @@ function HomeScreen({ navigation }: any) {
 
     setLedger(transactionsByCategory);
   };
+
+  if (transactionIsLoading && categoriesIsLoading)
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          height: windowHeight,
+        }}>
+        <ActivityIndicator size="large" color={COLORS["primary-3"]} />
+      </View>
+    );
 
   return (
     <View style={styles.container}>
