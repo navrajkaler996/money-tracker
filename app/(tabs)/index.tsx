@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Dimensions, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useGetExpensesByUserIdQuery } from "@/services/expenseApi";
@@ -8,6 +8,8 @@ const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
 function HomeScreen({ navigation }: any) {
+  const [totalExpenses, setTotalExpenses] = useState(0);
+
   const {
     data: expensesData,
     error: expensesError,
@@ -20,13 +22,19 @@ function HomeScreen({ navigation }: any) {
     isLoading: transactionsIsLoading,
   } = useGetTransactionsByUserIdQuery({ userId: 1, month: 12, year: 2024 });
 
-  console.log(
-    "-----",
+  useEffect(() => {
+    if (transactionsData?.length > 0) {
+      const total = transactionsData?.reduce(
+        (accumulator: Number, transaction: any) => {
+          return accumulator + transaction.transaction_amount;
+        },
+        0
+      );
 
-    transactionsData,
-    transactionsError,
-    transactionsIsLoading
-  );
+      setTotalExpenses(total);
+    }
+  }, [transactionsData]);
+
   return (
     <View style={styles.container}>
       <View style={styles.gradientContainer}>
@@ -37,7 +45,7 @@ function HomeScreen({ navigation }: any) {
                 Expense
               </Text>
               <Text style={[styles.textNumbers, { fontSize: 24 }]}>
-                ${expensesData && expensesData?.totalExpenses}
+                ${totalExpenses}
               </Text>
             </View>
           </View>
