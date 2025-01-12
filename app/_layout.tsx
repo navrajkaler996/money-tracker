@@ -4,6 +4,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useFonts } from "expo-font";
 import { View, Text, StyleSheet, Dimensions } from "react-native";
 import { useState } from "react";
+import { Provider } from "react-redux";
+import { store } from "../store";
 
 export default function AppLayout() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
@@ -18,9 +20,11 @@ export default function AppLayout() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-    </Stack>
+    <Provider store={store}>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+      </Stack>
+    </Provider>
   );
 }
 

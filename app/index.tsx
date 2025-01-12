@@ -25,7 +25,7 @@ function WelcomeScreen({ navigation }: any) {
       password: false,
     },
   });
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
 
   if (isLoggedIn) return <Redirect href={"/(tabs)"} />;
 

@@ -1,11 +1,18 @@
 import React from "react";
 import { View, Text, StyleSheet, Dimensions, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { useGetExpensesByUserIdQuery } from "@/services/expenseApi";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
 function HomeScreen({ navigation }: any) {
+  const {
+    data: expensesData,
+    error: expensesError,
+    isLoading: expensesIsLoading,
+  } = useGetExpensesByUserIdQuery(1);
+
   return (
     <View style={styles.container}>
       <View style={styles.gradientContainer}>
@@ -15,7 +22,9 @@ function HomeScreen({ navigation }: any) {
               <Text style={[styles.textHeading, { fontSize: 14 }]}>
                 Expense
               </Text>
-              <Text style={[styles.textNumbers, { fontSize: 24 }]}>$3500</Text>
+              <Text style={[styles.textNumbers, { fontSize: 24 }]}>
+                ${expensesData && expensesData?.totalExpenses}
+              </Text>
             </View>
           </View>
           <View style={styles.accountContainter}>
