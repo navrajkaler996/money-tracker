@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, Dimensions, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useGetExpensesByUserIdQuery } from "@/services/expenseApi";
+import { useGetTransactionsByUserIdQuery } from "@/services/transactionApi";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
@@ -13,6 +14,19 @@ function HomeScreen({ navigation }: any) {
     isLoading: expensesIsLoading,
   } = useGetExpensesByUserIdQuery(1);
 
+  const {
+    data: transactionsData,
+    error: transactionsError,
+    isLoading: transactionsIsLoading,
+  } = useGetTransactionsByUserIdQuery({ userId: 1, month: 12, year: 2024 });
+
+  console.log(
+    "-----",
+
+    transactionsData,
+    transactionsError,
+    transactionsIsLoading
+  );
   return (
     <View style={styles.container}>
       <View style={styles.gradientContainer}>
