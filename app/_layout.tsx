@@ -22,7 +22,7 @@ export default function AppLayout() {
   return (
     <Provider store={store}>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
     </Provider>
   );

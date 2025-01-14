@@ -31,7 +31,7 @@ function RegistrationScreen({ navigation }: any) {
 
   const [createUser, { isLoading, error, data }] = useCreateUserMutation();
 
-  if (isRegistered) return <Redirect href={"/(tabs)"} />;
+  if (isRegistered) return <Redirect href={"/(tabs)?from=registration"} />;
 
   const handleChange = (field: any, value: any) => {
     setForm((prevForm) => ({
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
   button: {
     width: windowWidth * 0.7,
     height: 40,
-    backgroundColor: COLORS["primary-3"],
+    backgroundColor: COLORS["primary-4"],
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 20,
