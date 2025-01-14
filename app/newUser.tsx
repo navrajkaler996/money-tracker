@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -7,27 +7,27 @@ import {
   Pressable,
   Image,
 } from "react-native";
+
+import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { COLORS } from "@/utils/constants";
+
+//Components
 import SettingOne from "./settingOne";
 import SettingTwo from "./settingTwo";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCreateUserMutation } from "@/services/userApi";
-import { useRoute } from "@react-navigation/native";
-import * as SecureStore from "expo-secure-store";
-import { store } from "@/store";
+
 import { useAuth } from "@/context/AuthContext";
+import { COLORS } from "@/utils/constants";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
-// const scaleFontSize = (size) => (windowWidth / 400) * size;
 
 function NewUserScreen() {
-  const { user, token } = useAuth();
+  const router = useRouter();
+  //CONTEXT
+  const { user } = useAuth();
 
   const [setting, setSetting] = useState(1);
-  const [activeAccount, setActiveAccount] = useState("");
-
+  const [activeAccount, setActiveAccount] = useState("accounts");
   // State for categories
   const [categories, setCategories] = useState([
     "Grocery",
@@ -40,11 +40,18 @@ function NewUserScreen() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategory, setNewCategory] = useState("");
-
   const [accounts, setAccounts] = useState<string[]>([]);
 
   const handleSetting = () => {
+    if (setting === 3) {
+      router.push({
+        pathname: "/(tabs)",
+      });
+      return;
+    }
+
     let tempsSetting = setting === 3 ? 1 : setting + 1;
+
     setSetting(tempsSetting);
   };
 
@@ -103,8 +110,9 @@ function NewUserScreen() {
               ? `Select categories`
               : setting === 2
               ? `Select accounts`
-              : `Set Budget`}
+              : `All ready!`}
           </Text>
+
           <View style={styles.horizontalLine} />
           {/* Category capsules */}
           {setting === 1 && (
@@ -122,10 +130,26 @@ function NewUserScreen() {
           {setting === 2 && (
             <SettingTwo
               activeAccount={activeAccount}
+              setActiveAccount={setActiveAccount}
               handleAccounts={handleAccounts}
               accounts={accounts}
               setAccounts={setAccounts}
             />
+          )}
+          {setting === 3 && (
+            <View style={styles.allReadyImageContainer}>
+              <Image
+                source={require("../assets/images/icons/thumbs-up.png")}
+                style={styles.allReadyImage}
+              />
+              <View style={styles.allReadyTextContainer}>
+                <Text style={styles.allReadyText}>Click on finish</Text>
+                <Text style={styles.allReadyText}>and</Text>
+                <Text style={styles.allReadyText}>
+                  Start tracking your money!
+                </Text>
+              </View>
+            </View>
           )}
           <View style={styles.buttonContainer}>
             <View style={styles.dotIndicatorContainer}>
@@ -149,7 +173,9 @@ function NewUserScreen() {
                 }></View>
             </View>
             <Pressable style={styles.button} onPress={handleSetting}>
-              <Text style={styles.buttonText}>Next</Text>
+              <Text style={styles.buttonText}>
+                {setting === 3 ? "Finish" : "Next"}
+              </Text>
             </Pressable>
           </View>
         </LinearGradient>
@@ -219,39 +245,6 @@ const styles = StyleSheet.create({
     marginTop: 15,
     marginBottom: 15,
   },
-  categoryCapsuleContainer: {
-    width: windowWidth * 0.7,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "flex-start",
-    gap: 10,
-  },
-  categoryCapsule: {
-    paddingTop: 3,
-    paddingBottom: 3,
-    paddingRight: 8,
-    paddingLeft: 8,
-    borderWidth: 0.1,
-    borderColor: "#ddd",
-    backgroundColor: COLORS["primary-3"],
-    borderRadius: 20,
-    justifyContent: "center",
-  },
-  categoryCapsuleActive: {
-    paddingTop: 3,
-    paddingBottom: 3,
-    paddingRight: 8,
-    paddingLeft: 8,
-    borderWidth: 0.1,
-    borderColor: "#ddd",
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    justifyContent: "center",
-  },
-  categoryCapsuleText: {
-    color: "#000",
-    fontFamily: "Aller_Rg",
-  },
 
   dotIndicatorContainer: {
     flexDirection: "row",
@@ -293,35 +286,30 @@ const styles = StyleSheet.create({
     gap: 20,
     alignItems: "center",
   },
-  input: {
-    width: windowWidth * 0.7,
-    height: 40,
-    borderWidth: 1,
-    borderTopWidth: 0,
-    borderRightWidth: 0,
-    borderLeftWidth: 0,
-    borderColor: "#ccc",
-    fontSize: 16,
-    backgroundColor: "transparent",
-    paddingLeft: 10,
-  },
   form: {
     marginTop: 20,
     alignItems: "center",
     gap: 15,
   },
-  buttonCash: {
-    width: windowWidth * 0.3,
-    height: 30,
-    backgroundColor: COLORS["primary-3"],
-    justifyContent: "center",
+  allReadyImageContainer: {
     alignItems: "center",
+    justifyContent: "center",
   },
-  buttonTextCash: {
-    fontSize: 12,
-    textTransform: "capitalize",
-    letterSpacing: 1,
-    fontFamily: "Aller_Bd",
+  allReadyImage: {
+    width: 150,
+    height: 150,
+  },
+  allReadyTextContainer: {
+    marginTop: 30,
+    gap: 5,
+  },
+  allReadyText: {
+    textAlign: "center",
+    fontFamily: "Aller_Rg",
+    letterSpacing: 0.5,
+    fontSize: 16,
+    paddingRight: 20,
+    paddingLeft: 20,
   },
 });
 

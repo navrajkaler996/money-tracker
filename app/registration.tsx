@@ -19,6 +19,7 @@ const windowWidth = Dimensions.get("window").width;
 
 function RegistrationScreen() {
   const { login } = useAuth();
+  const router = useRouter();
 
   const [form, setForm] = useState({
     first_name: "",
@@ -35,9 +36,7 @@ function RegistrationScreen() {
   const [createUser, { isLoading, error, data: createUserData }] =
     useCreateUserMutation();
 
-  const router = useRouter();
   useEffect(() => {
-    console.log("---", createUserData, isRegistered);
     if (isRegistered && createUserData?.access_token) {
       login(createUserData);
 

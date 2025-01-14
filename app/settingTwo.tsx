@@ -14,6 +14,7 @@ const windowWidth = Dimensions.get("window").width;
 
 interface SettingTwoProps {
   activeAccount: string;
+  setActiveAccount: React.Dispatch<React.SetStateAction<any>>;
   accounts: Array<any>;
   setAccounts: React.Dispatch<React.SetStateAction<any[]>>; // setter for accounts
   handleAccounts: (activeAccount: string) => void;
@@ -21,10 +22,12 @@ interface SettingTwoProps {
 
 const SettingTwo = ({
   activeAccount,
+  setActiveAccount,
   accounts,
   setAccounts,
   handleAccounts,
 }: SettingTwoProps) => {
+  console.log("---", activeAccount);
   const [cashAmount, setCashAmount] = useState<string>("");
   const [debitBankName, setDebitBankName] = useState<string>("");
   const [debitAmount, setDebitAmount] = useState<string>("");
@@ -46,7 +49,8 @@ const SettingTwo = ({
           amount: parseFloat(cashAmount),
         },
       ]);
-      setCashAmount(""); //
+      setCashAmount("");
+      setActiveAccount("accounts");
     } else if (activeAccount === "debit") {
       if (debitBankName.trim() === "" || debitAmount.trim() === "") {
         alert("Please enter bank name and total amount.");
@@ -63,6 +67,7 @@ const SettingTwo = ({
       ]);
       setDebitBankName("");
       setDebitAmount("");
+      setActiveAccount("accounts");
     } else if (activeAccount === "credit") {
       if (
         creditBankName.trim() === "" ||
@@ -85,6 +90,7 @@ const SettingTwo = ({
       setCreditBankName("");
       setCreditLimit("");
       setCreditAmount("");
+      setActiveAccount("accounts");
     }
   };
 
@@ -119,6 +125,19 @@ const SettingTwo = ({
           <Text style={styles.categoryCapsuleText}>Credit</Text>
         </Pressable>
       </View>
+      {activeAccount === "accounts" && (
+        <View style={styles.accountsContainer}>
+          {accounts?.map((account) => {
+            return (
+              <Pressable style={styles.categoryCapsuleActive}>
+                <Text style={styles.categoryCapsuleText}>
+                  {account?.bankName}-{account?.type}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      )}
 
       {/* Cash Account Form */}
       {activeAccount === "cash" && (
@@ -198,7 +217,6 @@ const SettingTwo = ({
 
 const styles = StyleSheet.create({
   categoryCapsuleContainer: {
-    width: windowWidth * 0.7,
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
@@ -222,7 +240,7 @@ const styles = StyleSheet.create({
     paddingLeft: 8,
     borderWidth: 0.1,
     borderColor: "#ddd",
-    backgroundColor: "#fff",
+    backgroundColor: COLORS["active-yellow"],
     borderRadius: 20,
     justifyContent: "center",
   },
@@ -259,6 +277,13 @@ const styles = StyleSheet.create({
     textTransform: "capitalize",
     letterSpacing: 1,
     fontFamily: "Aller_Bd",
+  },
+  accountsContainer: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 20,
+    flexWrap: "wrap",
+    justifyContent: "center",
   },
 });
 
