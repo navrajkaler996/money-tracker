@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,19 +6,36 @@ import {
   Dimensions,
   ActivityIndicator,
 } from "react-native";
+
 import { LinearGradient } from "expo-linear-gradient";
+
 import { useGetTransactionsByUserIdQuery } from "@/services/transactionApi";
 import { useGetCategoriesQuery } from "@/services/categoryApi";
 import CategoryContainer from "@/components/CategoryContainer";
 
 import { COLORS } from "@/utils/constants";
+import { useGetAccountsQuery } from "@/services/accountApi";
+import { useAuth } from "@/context/AuthContext";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
+interface CalculatedAccounts {
+  totalDebitAmount: number;
+  totalCashAmount: number;
+  totalCreditAvailable: number;
+}
+
 function HomeScreen({ navigation }: any) {
+  const { user } = useAuth();
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [ledger, setLedger] = useState([]);
+  const [calculatedAccounts, setCalculatedAccounts] =
+    useState<CalculatedAccounts>({
+      totalDebitAmount: 0,
+      totalCashAmount: 0,
+      totalCreditAvailable: 0,
+    });
 
   const { data: transactionsData, isLoading: transactionIsLoading } =
     useGetTransactionsByUserIdQuery({
@@ -28,6 +45,12 @@ function HomeScreen({ navigation }: any) {
     });
   const { data: categoriesData, isLoading: categoriesIsLoading } =
     useGetCategoriesQuery(null);
+
+  const {
+    data: accountsData,
+    isLoading: accountsIsLoading,
+    error: accountsError,
+  } = useGetAccountsQuery(user.userId);
 
   //Creating expenses for user
   useEffect(() => {
@@ -50,6 +73,38 @@ function HomeScreen({ navigation }: any) {
     }
   }, [categoriesData, transactionsData]);
 
+  //Calculating data in user accounts
+  useEffect(() => {
+    if (accountsData) {
+      const totalDebitAmount = accountsData
+        ?.filter((account: any) => account.account_type === "debit")
+        .reduce(
+          (total: number, account: any) => total + account.total_amount,
+          0
+        );
+
+      const totalCashAmount = accountsData
+        ?.filter((account: any) => account.account_type === "cash")
+        .reduce(
+          (total: number, account: any) => total + account.total_amount,
+          0
+        );
+
+      const totalCreditAvailable = accountsData
+        ?.filter((account: any) => account.account_type === "credit")
+        .reduce(
+          (total: number, account: any) => total + account.available_credit,
+          0
+        );
+
+      setCalculatedAccounts({
+        totalCashAmount,
+        totalDebitAmount,
+        totalCreditAvailable,
+      });
+    }
+  }, [accountsData]);
+
   const calculateTransactionsByCategory = (
     categoriesData: any,
     transactionsData: any
@@ -70,7 +125,7 @@ function HomeScreen({ navigation }: any) {
     setLedger(transactionsByCategory);
   };
 
-  if (transactionIsLoading && categoriesIsLoading)
+  if (transactionIsLoading && categoriesIsLoading && accountsIsLoading)
     return (
       <View
         style={{
@@ -102,15 +157,21 @@ function HomeScreen({ navigation }: any) {
           <View style={styles.accountContainter}>
             <View style={styles.viewInGradient}>
               <Text style={styles.textHeading}>Cash</Text>
-              <Text style={styles.textNumbers}>$1500</Text>
+              <Text style={styles.textNumbers}>
+                ${calculatedAccounts?.totalCashAmount}
+              </Text>
             </View>
             <View style={styles.viewInGradient}>
               <Text style={styles.textHeading}>Debit</Text>
-              <Text style={styles.textNumbers}>$23500</Text>
+              <Text style={styles.textNumbers}>
+                ${calculatedAccounts?.totalDebitAmount}
+              </Text>
             </View>
             <View style={styles.viewInGradient}>
               <Text style={styles.textHeading}>Credit</Text>
-              <Text style={styles.textNumbers}>$500</Text>
+              <Text style={styles.textNumbers}>
+                ${calculatedAccounts.totalCreditAvailable}
+              </Text>
             </View>
           </View>
         </LinearGradient>
@@ -130,6 +191,12 @@ const styles = StyleSheet.create({
   gradientContainer: {
     width: windowWidth,
     elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    marginBottom: 15,
+    borderRadius: 10,
   },
   gradient: {
     width: "100%",

@@ -14,7 +14,14 @@ export const accountApi = createApi({
         body: payload,
       }),
     }),
+    // Fetch accounts using userId as a param
+    getAccounts: builder.query({
+      query: (userId) => ({
+        url: `/fetch/${userId}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
-export const { useInsertAccountsMutation } = accountApi;
+export const { useInsertAccountsMutation, useGetAccountsQuery } = accountApi;
