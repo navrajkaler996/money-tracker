@@ -9,7 +9,15 @@ export const categoryApi = createApi({
     getCategories: builder.query({
       query: () => "",
     }),
+    insertCategories: builder.mutation({
+      query: ({ userId, payload }) => ({
+        url: `/insert/${userId}`,
+        method: "POST",
+        body: payload,
+      }),
+    }),
   }),
 });
 
-export const { useGetCategoriesQuery } = categoryApi;
+export const { useGetCategoriesQuery, useInsertCategoriesMutation } =
+  categoryApi;

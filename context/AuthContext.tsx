@@ -4,7 +4,7 @@ import * as SecureStore from "expo-secure-store";
 interface AuthContextType {
   token: string | null;
   user: {
-    id: number;
+    userId: number;
     email: string;
     first_name: string;
   };

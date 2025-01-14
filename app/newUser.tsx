@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   Dimensions,
   Pressable,
   Image,
+  ActivityIndicator,
 } from "react-native";
 
 import { useRouter } from "expo-router";
@@ -17,6 +18,9 @@ import SettingTwo from "./settingTwo";
 
 import { useAuth } from "@/context/AuthContext";
 import { COLORS } from "@/utils/constants";
+import { useInsertAccountsMutation } from "@/services/accountApi";
+import { useCreateUserMutation } from "@/services/userApi";
+import { useInsertCategoriesMutation } from "@/services/categoryApi";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
@@ -42,11 +46,85 @@ function NewUserScreen() {
   const [newCategory, setNewCategory] = useState("");
   const [accounts, setAccounts] = useState<string[]>([]);
 
-  const handleSetting = () => {
-    if (setting === 3) {
+  //API for inserting accounts
+  const [
+    insertAccounts,
+    {
+      isLoading: insertAccountsIsLoading,
+      error: insertAccountsError,
+      data: insertAccountsData,
+    },
+  ] = useInsertAccountsMutation();
+
+  //API for inserting categories
+  const [
+    insertCategories,
+    {
+      isLoading: insertCategoriesIsLoading,
+      error: insertCategoriesError,
+      data: insertCategoriesData,
+    },
+  ] = useInsertCategoriesMutation();
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (insertAccountsIsLoading || insertCategoriesIsLoading)
+      setIsLoading(true);
+
+    if (insertAccountsData && insertCategoriesData) {
       router.push({
         pathname: "/(tabs)",
       });
+    }
+  }, [
+    insertAccountsIsLoading,
+    insertAccountsError,
+    insertAccountsData,
+    insertCategoriesData,
+    insertCategoriesError,
+    insertCategoriesIsLoading,
+  ]);
+
+  //Creating payload for insert accounts API
+  const createAccountsPayload = (accounts: any) => {
+    const payload = accounts.map((account: any) => {
+      return {
+        account_type: account.type,
+        total_amount:
+          account.type === "debit" || account.type === "cash"
+            ? account.amount
+            : null,
+        bank_name:
+          account.type === "debit" || account.type === "credit"
+            ? account.bankName
+            : null,
+        credit_limit: account.type === "credit" ? account.limit : null,
+        available_credit: account.type === "credit" ? account.credit : null,
+      };
+    });
+
+    return payload;
+  };
+
+  const handleSetting = () => {
+    if (setting === 3) {
+      //creating paylod for insertAccounts API
+      const accountsPayload = createAccountsPayload(accounts);
+
+      if (accountsPayload && selectedCategories) {
+        const userId = user.userId;
+
+        insertCategories({
+          userId,
+          payload: selectedCategories,
+        });
+        insertAccounts({
+          userId,
+          payload: accountsPayload,
+        });
+      }
+
       return;
     }
 
@@ -105,79 +183,93 @@ function NewUserScreen() {
         <LinearGradient
           colors={["#a8ff78", "#78ffd6"]}
           style={styles.getStartedContainer}>
-          <Text style={styles.heading2}>
-            {setting === 1
-              ? `Select categories`
-              : setting === 2
-              ? `Select accounts`
-              : `All ready!`}
-          </Text>
-
-          <View style={styles.horizontalLine} />
-          {/* Category capsules */}
-          {setting === 1 && (
-            <SettingOne
-              categories={categories}
-              selectedCategories={selectedCategories}
-              handleCategory={handleCategory}
-              showAddCategory={showAddCategory}
-              setShowAddCategory={setShowAddCategory}
-              newCategory={newCategory}
-              setNewCategory={setNewCategory}
-              handleAddCategory={handleAddCategory}
-            />
-          )}
-          {setting === 2 && (
-            <SettingTwo
-              activeAccount={activeAccount}
-              setActiveAccount={setActiveAccount}
-              handleAccounts={handleAccounts}
-              accounts={accounts}
-              setAccounts={setAccounts}
-            />
-          )}
-          {setting === 3 && (
-            <View style={styles.allReadyImageContainer}>
-              <Image
-                source={require("../assets/images/icons/thumbs-up.png")}
-                style={styles.allReadyImage}
-              />
-              <View style={styles.allReadyTextContainer}>
-                <Text style={styles.allReadyText}>Click on finish</Text>
-                <Text style={styles.allReadyText}>and</Text>
-                <Text style={styles.allReadyText}>
-                  Start tracking your money!
-                </Text>
-              </View>
+          {isLoading ? (
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+                height: windowHeight,
+              }}>
+              <ActivityIndicator size="large" color={COLORS["primary-3"]} />
             </View>
-          )}
-          <View style={styles.buttonContainer}>
-            <View style={styles.dotIndicatorContainer}>
-              <View
-                style={
-                  setting === 1
-                    ? { ...styles.dotIndicator, ...styles.activeDot }
-                    : styles.dotIndicator
-                }></View>
-              <View
-                style={
-                  setting === 2
-                    ? { ...styles.dotIndicator, ...styles.activeDot }
-                    : styles.dotIndicator
-                }></View>
-              <View
-                style={
-                  setting === 3
-                    ? { ...styles.dotIndicator, ...styles.activeDot }
-                    : styles.dotIndicator
-                }></View>
-            </View>
-            <Pressable style={styles.button} onPress={handleSetting}>
-              <Text style={styles.buttonText}>
-                {setting === 3 ? "Finish" : "Next"}
+          ) : (
+            <>
+              <Text style={styles.heading2}>
+                {setting === 1
+                  ? `Select categories`
+                  : setting === 2
+                  ? `Select accounts`
+                  : `All ready!`}
               </Text>
-            </Pressable>
-          </View>
+
+              <View style={styles.horizontalLine} />
+              {/* Category capsules */}
+              {setting === 1 && (
+                <SettingOne
+                  categories={categories}
+                  selectedCategories={selectedCategories}
+                  handleCategory={handleCategory}
+                  showAddCategory={showAddCategory}
+                  setShowAddCategory={setShowAddCategory}
+                  newCategory={newCategory}
+                  setNewCategory={setNewCategory}
+                  handleAddCategory={handleAddCategory}
+                />
+              )}
+              {setting === 2 && (
+                <SettingTwo
+                  activeAccount={activeAccount}
+                  setActiveAccount={setActiveAccount}
+                  handleAccounts={handleAccounts}
+                  accounts={accounts}
+                  setAccounts={setAccounts}
+                />
+              )}
+              {setting === 3 && (
+                <View style={styles.allReadyImageContainer}>
+                  <Image
+                    source={require("../assets/images/icons/thumbs-up.png")}
+                    style={styles.allReadyImage}
+                  />
+                  <View style={styles.allReadyTextContainer}>
+                    <Text style={styles.allReadyText}>Click on finish</Text>
+                    <Text style={styles.allReadyText}>and</Text>
+                    <Text style={styles.allReadyText}>
+                      Start tracking your money!
+                    </Text>
+                  </View>
+                </View>
+              )}
+              <View style={styles.buttonContainer}>
+                <View style={styles.dotIndicatorContainer}>
+                  <View
+                    style={
+                      setting === 1
+                        ? { ...styles.dotIndicator, ...styles.activeDot }
+                        : styles.dotIndicator
+                    }></View>
+                  <View
+                    style={
+                      setting === 2
+                        ? { ...styles.dotIndicator, ...styles.activeDot }
+                        : styles.dotIndicator
+                    }></View>
+                  <View
+                    style={
+                      setting === 3
+                        ? { ...styles.dotIndicator, ...styles.activeDot }
+                        : styles.dotIndicator
+                    }></View>
+                </View>
+                <Pressable style={styles.button} onPress={handleSetting}>
+                  <Text style={styles.buttonText}>
+                    {setting === 3 ? "Finish" : "Next"}
+                  </Text>
+                </Pressable>
+              </View>
+            </>
+          )}
         </LinearGradient>
       </View>
     </View>

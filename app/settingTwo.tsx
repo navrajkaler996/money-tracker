@@ -27,7 +27,6 @@ const SettingTwo = ({
   setAccounts,
   handleAccounts,
 }: SettingTwoProps) => {
-  console.log("---", activeAccount);
   const [cashAmount, setCashAmount] = useState<string>("");
   const [debitBankName, setDebitBankName] = useState<string>("");
   const [debitAmount, setDebitAmount] = useState<string>("");
