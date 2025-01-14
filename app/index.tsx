@@ -27,7 +27,7 @@ function WelcomeScreen({ navigation }: any) {
   });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  if (!isLoggedIn) return <Redirect href="/newUser" />;
+  if (!isLoggedIn) return <Redirect href="/registration" />;
 
   const handleChange = (field: any, value: any) => {
     setForm((prevForm) => ({
@@ -126,6 +126,8 @@ function WelcomeScreen({ navigation }: any) {
           <Pressable style={styles.button} onPress={handleSubmit}>
             <Text style={styles.buttonText}>Login</Text>
           </Pressable>
+          <Text>Or</Text>
+          <Text>Create account</Text>
         </View>
       </LinearGradient>
     </View>

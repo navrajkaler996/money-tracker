@@ -1,8 +1,9 @@
+import { useAuth } from "@/context/AuthContext";
 import { useCreateUserMutation } from "@/services/userApi";
 import { COLORS } from "@/utils/constants";
 import { LinearGradient } from "expo-linear-gradient";
-import { Redirect } from "expo-router";
-import { useState } from "react";
+import { Redirect, router, useNavigation, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   Dimensions,
   Image,
@@ -16,7 +17,9 @@ import { TextInput } from "react-native";
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
-function RegistrationScreen({ navigation }: any) {
+function RegistrationScreen() {
+  const { login } = useAuth();
+
   const [form, setForm] = useState({
     first_name: "",
     email: "",
@@ -29,9 +32,23 @@ function RegistrationScreen({ navigation }: any) {
   });
   const [isRegistered, setIsRegistered] = useState(false);
 
-  const [createUser, { isLoading, error, data }] = useCreateUserMutation();
+  const [createUser, { isLoading, error, data: createUserData }] =
+    useCreateUserMutation();
 
-  if (isRegistered) return <Redirect href={"/(tabs)?from=registration"} />;
+  const router = useRouter();
+  useEffect(() => {
+    console.log("---", createUserData, isRegistered);
+    if (isRegistered && createUserData?.access_token) {
+      login(createUserData);
+
+      router.push({
+        pathname: "/newUser",
+        params: {
+          user: createUserData,
+        },
+      });
+    }
+  }, [createUserData, isRegistered]);
 
   const handleChange = (field: any, value: any) => {
     setForm((prevForm) => ({

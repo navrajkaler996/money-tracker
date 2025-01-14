@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,11 +11,20 @@ import { LinearGradient } from "expo-linear-gradient";
 import { COLORS } from "@/utils/constants";
 import SettingOne from "./settingOne";
 import SettingTwo from "./settingTwo";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCreateUserMutation } from "@/services/userApi";
+import { useRoute } from "@react-navigation/native";
+import * as SecureStore from "expo-secure-store";
+import { store } from "@/store";
+import { useAuth } from "@/context/AuthContext";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
+// const scaleFontSize = (size) => (windowWidth / 400) * size;
 
-function NewUserScreen({ navigation }: any) {
+function NewUserScreen() {
+  const { user, token } = useAuth();
+
   const [setting, setSetting] = useState(1);
   const [activeAccount, setActiveAccount] = useState("");
 
@@ -30,7 +39,7 @@ function NewUserScreen({ navigation }: any) {
   ]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showAddCategory, setShowAddCategory] = useState(false);
-  const [newCategory, setNewCategory] = useState(""); // State for the new category input
+  const [newCategory, setNewCategory] = useState("");
 
   const [accounts, setAccounts] = useState<string[]>([]);
 
@@ -73,7 +82,8 @@ function NewUserScreen({ navigation }: any) {
       <View style={styles.gradientContainer}>
         <LinearGradient colors={["#a8ff78", "#78ffd6"]} style={styles.gradient}>
           <View style={styles.heading1Container}>
-            <Text style={styles.heading1}>Set up your activeAccount</Text>
+            <Text style={styles.heading1}>Welcome, {user?.first_name}</Text>
+            <Text style={styles.heading2}>Set up your Account</Text>
           </View>
           <Image
             style={styles.setupImage}
@@ -160,13 +170,13 @@ const styles = StyleSheet.create({
   },
   gradient: {
     width: "100%",
-    minHeight: windowHeight * 0.35,
+    minHeight: windowHeight * 0.4,
     borderBottomLeftRadius: 50,
     borderBottomRightRadius: 50,
     alignItems: "center",
   },
   getStartedOuterContainer: {
-    marginTop: -100,
+    marginTop: -80,
   },
   getStartedContainer: {
     width: windowWidth * 0.8,
@@ -259,7 +269,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS["primary-4"],
   },
   setupImage: {
-    marginTop: 30,
+    width: windowWidth * 0.15,
+    height: windowHeight * 0.15,
+    resizeMode: "contain",
   },
   button: {
     width: windowWidth * 0.7,

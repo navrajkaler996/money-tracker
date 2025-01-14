@@ -6,6 +6,7 @@ import { View, Text, StyleSheet, Dimensions } from "react-native";
 import { useState } from "react";
 import { Provider } from "react-redux";
 import { store } from "../store";
+import { AuthProvider } from "@/context/AuthContext";
 
 export default function AppLayout() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
@@ -20,11 +21,13 @@ export default function AppLayout() {
   }
 
   return (
-    <Provider store={store}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
-    </Provider>
+    <AuthProvider>
+      <Provider store={store}>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+      </Provider>
+    </AuthProvider>
   );
 }
 
