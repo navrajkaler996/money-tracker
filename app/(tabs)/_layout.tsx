@@ -28,6 +28,22 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="transactions"
+        options={{
+          title: "Transactions",
+          tabBarIcon: ({ focused, color, size }) => (
+            <Image
+              source={require("../../assets/images/icons/setting.png")}
+              style={{
+                width: size,
+                height: size,
+                tintColor: focused ? color : "gray",
+              }}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: "Settings",

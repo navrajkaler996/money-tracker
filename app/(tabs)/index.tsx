@@ -27,7 +27,8 @@ interface CalculatedAccounts {
 }
 
 function HomeScreen({ navigation }: any) {
-  const { user } = useAuth();
+  // const { user } = useAuth();
+  const user = { userId: 1 };
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [ledger, setLedger] = useState([]);
   const [calculatedAccounts, setCalculatedAccounts] =
@@ -75,27 +76,46 @@ function HomeScreen({ navigation }: any) {
 
   //Calculating data in user accounts
   useEffect(() => {
-    if (accountsData) {
-      const totalDebitAmount = accountsData
-        ?.filter((account: any) => account.account_type === "debit")
-        .reduce(
-          (total: number, account: any) => total + account.total_amount,
-          0
-        );
+    if (accountsData?.length > 0) {
+      let totalDebitAmount = 0;
+      let totalCashAmount = 0;
+      let totalCreditAvailable = 0;
 
-      const totalCashAmount = accountsData
-        ?.filter((account: any) => account.account_type === "cash")
-        .reduce(
-          (total: number, account: any) => total + account.total_amount,
-          0
-        );
+      // Calculate total debit amount if there are debit accounts
+      if (
+        accountsData.some((account: any) => account.account_type === "debit")
+      ) {
+        totalDebitAmount = accountsData
+          .filter((account: any) => account.account_type === "debit")
+          .reduce(
+            (total: number, account: any) => total + account.total_amount,
+            0
+          );
+      }
 
-      const totalCreditAvailable = accountsData
-        ?.filter((account: any) => account.account_type === "credit")
-        .reduce(
-          (total: number, account: any) => total + account.available_credit,
-          0
-        );
+      // Calculate total cash amount if there are cash accounts
+      if (
+        accountsData.some((account: any) => account.account_type === "cash")
+      ) {
+        totalCashAmount = accountsData
+          .filter((account: any) => account.account_type === "cash")
+          .reduce(
+            (total: number, account: any) => total + account.total_amount,
+            0
+          );
+      }
+
+      // Calculate total available credit if there are credit accounts
+      if (
+        accountsData.some((account: any) => account.account_type === "credit")
+      ) {
+        totalCreditAvailable = accountsData
+          .filter((account: any) => account.account_type === "credit")
+          .reduce(
+            (total: number, account: any) => total + account.available_credit,
+            0
+          );
+      }
 
       setCalculatedAccounts({
         totalCashAmount,

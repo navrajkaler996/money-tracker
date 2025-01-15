@@ -27,7 +27,7 @@ function WelcomeScreen({ navigation }: any) {
   });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  if (!isLoggedIn) return <Redirect href="/registration" />;
+  if (!isLoggedIn) return <Redirect href="/(tabs)" />;
 
   const handleChange = (field: any, value: any) => {
     setForm((prevForm) => ({
