@@ -15,8 +15,10 @@ const windowWidth = Dimensions.get("window").width;
 
 function TransactionsScreen() {
   const navigation = useNavigation();
-  const handlePress = () => {
-    navigation.navigate("transactionOptions/transactionList");
+  const handlePress = (value: string) => {
+    if (value === "add-transaction") {
+      navigation.navigate("transactionOptions/addTransaction");
+    } else navigation.navigate("transactionOptions/recentTransactions");
   };
   return (
     <View style={styles.container}>
@@ -42,22 +44,14 @@ function TransactionsScreen() {
       <View style={styles.bottomContainer}>
         <TouchableOpacity style={styles.openContainer} onPress={handlePress}>
           <LinearGradient colors={["#a8ff78", "#78ffd6"]} style={styles.option}>
-            <Text style={styles.optionHeading}>Transactions</Text>
+            <Text style={styles.optionHeading}>Recent Transactions</Text>
             <Image
               style={styles.optionImage}
               source={require("../../assets/images/icons/transaction-2.png")}
             />
           </LinearGradient>
         </TouchableOpacity>
-        <View style={styles.openContainer}>
-          <LinearGradient colors={["#a8ff78", "#78ffd6"]} style={styles.option}>
-            <Text style={styles.optionHeading}> Top Transactions</Text>
-            <Image
-              style={styles.optionImage}
-              source={require("../../assets/images/icons/top-transactions.png")}
-            />
-          </LinearGradient>
-        </View>
+
         <View style={styles.openContainer}>
           <LinearGradient colors={["#a8ff78", "#78ffd6"]} style={styles.option}>
             <Text style={styles.optionHeading}> Transactions by category</Text>
@@ -76,6 +70,17 @@ function TransactionsScreen() {
             />
           </LinearGradient>
         </View>
+        <TouchableOpacity
+          style={styles.openContainer}
+          onPress={() => handlePress("add-transaction")}>
+          <LinearGradient colors={["#a8ff78", "#78ffd6"]} style={styles.option}>
+            <Text style={styles.optionHeading}> Add transaction</Text>
+            <Image
+              style={styles.optionImage}
+              source={require("../../assets/images/icons/add-transaction.png")}
+            />
+          </LinearGradient>
+        </TouchableOpacity>
       </View>
     </View>
   );

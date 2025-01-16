@@ -97,7 +97,7 @@ const transactions = [
   },
 ];
 
-const TransactionList = () => {
+const RecentTransactions = () => {
   return (
     <View style={styles.container}>
       {/* header */}
@@ -311,4 +311,4 @@ const styles = StyleSheet.create({
   accountNumberText: { fontFamily: "Aller_Rg" },
 });
 
-export default TransactionList;
+export default RecentTransactions;
