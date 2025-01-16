@@ -4,4 +4,5 @@ export const COLORS = {
   "primary-3": "#00e0b4",
   "primary-4": "#009f88",
   "active-yellow": "#FFEB3B",
+  "active-dark-green": "#4fa94d",
 };

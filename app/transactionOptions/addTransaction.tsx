@@ -1,4 +1,5 @@
 import { COLORS } from "@/utils/constants";
+import { Picker } from "@react-native-picker/picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
 import {
@@ -11,15 +12,40 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { Dropdown } from "react-native-element-dropdown";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
+
+const accountTypeData = [
+  { label: "Debit", value: "debit" },
+  { label: "Credit", value: "credit" },
+  { label: "Cash", value: "cash" },
+];
+const accountsData = [
+  { label: "CIBC", value: "debit" },
+  { label: "Credit", value: "credit" },
+  { label: "Cash", value: "cash" },
+];
 
 //Component to add a transaction
 const addTransaction = () => {
   const [transaction, setTransaction] = useState({
     amount: 0,
   });
+
+  const [activeTab, setActiveTab] = useState("account");
+
+  const [value, setValue] = useState(null);
+  const [isFocus, setIsFocus] = useState(false);
+
+  const handlePress = (value: string) => {
+    setActiveTab(value);
+  };
+
+  const renderLabel = () => {
+    return <Text style={[styles.label]}>Select an account</Text>;
+  };
   return (
     <View style={styles.container}>
       {/* header */}
@@ -48,21 +74,129 @@ const addTransaction = () => {
             colors={["#a8ff78", "#78ffd6"]}
             style={styles.gradient}>
             <View style={styles.tabsContainer}>
-              <View style={{ ...styles.tab, ...styles.tab1 }}>
-                <Text style={styles.tabText}>Account</Text>
-              </View>
-
-              <View style={styles.tab}>
-                {" "}
-                <Text style={styles.tabText}>Category</Text>
-              </View>
-              <View style={{ ...styles.tab, ...styles.tab3 }}>
-                {" "}
-                <Text style={styles.tabText}>Description</Text>
-              </View>
+              <Pressable
+                style={
+                  activeTab === "category"
+                    ? { ...styles.activeTab, ...styles.tab, ...styles.tab1 }
+                    : { ...styles.tab, ...styles.tab1 }
+                }
+                onPress={() => handlePress("category")}>
+                <Text
+                  style={
+                    activeTab === "category"
+                      ? [styles.tabText, styles.activeTabText]
+                      : [styles.tabText]
+                  }>
+                  Category
+                </Text>
+              </Pressable>
+              <Pressable
+                style={
+                  activeTab === "account"
+                    ? { ...styles.activeTab, ...styles.tab, ...styles.tab1 }
+                    : { ...styles.tab, ...styles.tab1 }
+                }
+                onPress={() => handlePress("account")}>
+                <Text
+                  style={
+                    activeTab === "account"
+                      ? [styles.tabText, styles.activeTabText]
+                      : [styles.tabText]
+                  }>
+                  Account
+                </Text>
+              </Pressable>
+              <Pressable
+                style={
+                  activeTab === "description"
+                    ? { ...styles.activeTab, ...styles.tab, ...styles.tab1 }
+                    : { ...styles.tab, ...styles.tab1 }
+                }
+                onPress={() => handlePress("description")}>
+                <Text
+                  style={
+                    activeTab === "description"
+                      ? [styles.tabText, styles.activeTabText]
+                      : [styles.tabText]
+                  }>
+                  Description
+                </Text>
+              </Pressable>
             </View>
             <View style={styles.optionsContainer}>
-              <Text>sdaasdsa</Text>
+              {activeTab === "account" && (
+                <>
+                  {" "}
+                  <View>
+                    {renderLabel()}
+                    <Dropdown
+                      style={[styles.dropdown]}
+                      placeholderStyle={styles.placeholderStyle}
+                      selectedTextStyle={styles.selectedTextStyle}
+                      inputSearchStyle={styles.inputSearchStyle}
+                      iconStyle={styles.iconStyle}
+                      data={accountTypeData}
+                      onChange={function (item: any): void {}}
+                      maxHeight={300}
+                      labelField={"label"}
+                      valueField={"value"}
+                      onFocus={() => setIsFocus(true)}></Dropdown>
+                  </View>
+                  <View>
+                    {renderLabel()}
+                    <Dropdown
+                      style={[styles.dropdown]}
+                      placeholderStyle={styles.placeholderStyle}
+                      selectedTextStyle={styles.selectedTextStyle}
+                      inputSearchStyle={styles.inputSearchStyle}
+                      iconStyle={styles.iconStyle}
+                      data={accountsData}
+                      onChange={function (item: any): void {}}
+                      maxHeight={300}
+                      labelField={"label"}
+                      valueField={"value"}
+                      onFocus={() => setIsFocus(true)}></Dropdown>
+                  </View>
+                </>
+              )}
+              {activeTab === "category" && (
+                <>
+                  {" "}
+                  <View>
+                    {renderLabel()}
+                    <Dropdown
+                      style={[styles.dropdown]}
+                      placeholderStyle={styles.placeholderStyle}
+                      selectedTextStyle={styles.selectedTextStyle}
+                      inputSearchStyle={styles.inputSearchStyle}
+                      iconStyle={styles.iconStyle}
+                      data={accountTypeData}
+                      onChange={function (item: any): void {}}
+                      maxHeight={300}
+                      labelField={"label"}
+                      valueField={"value"}
+                      onFocus={() => setIsFocus(true)}></Dropdown>
+                  </View>
+                  <Pressable style={styles.categoryButton}>
+                    <Text style={styles.categoryButtonText}>Add category</Text>
+                  </Pressable>
+                </>
+              )}
+              {activeTab === "description" && (
+                <TextInput
+                  style={[styles.descriptionInput]}
+                  placeholder="First Name"
+                  placeholderTextColor="#666"
+                  multiline={true}
+                  numberOfLines={10}
+                  // value={form.first_name}
+                  // onChangeText={(text) => handleChange("first_name", text)}
+                />
+              )}
+
+              <Pressable style={[styles.addButton]}>
+                <Text style={[styles.addButtonText]}>Add transaction</Text>
+              </Pressable>
             </View>
           </LinearGradient>
         </View>
@@ -155,6 +289,8 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     flex: 8,
+    marginTop: 30,
+    gap: 40,
   },
   tab: {
     flex: 3.3,
@@ -169,11 +305,109 @@ const styles = StyleSheet.create({
     borderLeftColor: "#fff",
     borderLeftWidth: 1.5,
   },
+  activeTab: {
+    backgroundColor: COLORS["active-dark-green"],
+  },
   tabText: {
     fontFamily: "Aller_Bd",
     letterSpacing: 0.1,
     textTransform: "uppercase",
     fontSize: 12,
+  },
+  activeTabText: {
+    color: "#FFF",
+  },
+  picker: {
+    height: 50,
+    width: 200,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 4,
+    marginBottom: 10,
+  },
+  dropdown: {
+    height: 40,
+    width: windowWidth * 0.8,
+    borderColor: "gray",
+    borderBottomWidth: 0.5,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    color: "#000",
+  },
+
+  icon: {
+    marginRight: 5,
+  },
+  label: {
+    // position: "absolute",
+    // left: 0,
+    // top: 8,
+    zIndex: 999,
+    paddingHorizontal: 8,
+    fontSize: 14,
+    fontFamily: "Aller_Bd",
+  },
+  placeholderStyle: {
+    fontSize: 16,
+    color: "#000",
+  },
+  selectedTextStyle: {
+    fontSize: 16,
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+  },
+  inputSearchStyle: {
+    height: 40,
+    fontSize: 16,
+  },
+  categoryButton: {
+    width: windowWidth * 0.8,
+    height: 40,
+    backgroundColor: COLORS["primary-3"],
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 20,
+  },
+  categoryButtonText: {
+    fontSize: 16,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    fontFamily: "Aller_Bd",
+  },
+  descriptionInput: {
+    width: windowWidth * 0.7,
+    height: 40,
+    borderBottomWidth: 1,
+    borderColor: "#gray",
+    borderRadius: 0,
+    fontSize: 16,
+    backgroundColor: "none",
+    paddingLeft: 10,
+  },
+  addButton: {
+    position: "absolute",
+    bottom: 50,
+    backgroundColor: COLORS["primary-3"],
+    width: windowWidth * 0.8,
+    left: 0,
+    height: 60,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 30,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+
+  addButtonText: {
+    fontFamily: "Aller_Bd",
+    fontSize: 20,
+    textTransform: "uppercase",
+    letterSpacing: 0.2,
   },
 });
 
