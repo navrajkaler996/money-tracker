@@ -10,7 +10,17 @@ export const transactionApi = createApi({
       query: ({ userId, month, year }) =>
         `${userId}?month=${month}&year=${year}`,
     }),
+    createTransactionByUserId: builder.mutation({
+      query: ({ userId, payload }) => ({
+        url: `/create/${userId}`,
+        method: "POST",
+        body: payload,
+      }),
+    }),
   }),
 });
 
-export const { useGetTransactionsByUserIdQuery } = transactionApi;
+export const {
+  useGetTransactionsByUserIdQuery,
+  useCreateTransactionByUserIdMutation,
+} = transactionApi;

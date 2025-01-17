@@ -1,11 +1,15 @@
 import AddTransactionSkeleton from "@/components/skeletons/addTransactionSkeleton";
 import { useGetAccountsQuery } from "@/services/accountApi";
 import { useGetCategoriesByUserIdQuery } from "@/services/categoryApi";
+import { useCreateTransactionByUserIdMutation } from "@/services/transactionApi";
 import { COLORS } from "@/utils/constants";
 import { Picker } from "@react-native-picker/picker";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Animated,
   Dimensions,
   FlatList,
@@ -37,6 +41,8 @@ const accountsData1 = [
 // const [tamount, setTamount] = useState(0);
 //Component to add a transaction
 const addTransaction = () => {
+  const router = useRouter();
+
   const userId = 59;
 
   //Fetching accounts using userId
@@ -52,6 +58,15 @@ const addTransaction = () => {
     isLoading: categoriesIsLoading,
     error: categoriesError,
   } = useGetCategoriesByUserIdQuery(userId);
+
+  const [
+    createTransaction,
+    {
+      isLoading: createTransactionIsLoading,
+      error: createTransactionError,
+      data: createTransactionData,
+    },
+  ] = useCreateTransactionByUserIdMutation();
 
   //Final data for API
   const [transaction, setTransaction] = useState({
@@ -72,8 +87,9 @@ const addTransaction = () => {
   const [banksDropdownData, setBanksDropdownData] = useState<any>([]);
   //List of categorues for category dropwdown
   const [categoriesDropdownData, setCategoriesDropdownData] = useState([]);
+  //State to show loader when form is submitted
+  const [submitIsLoading, setSubmitIsLoading] = useState(false);
 
-  const [value, setValue] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
 
   //USEEEFECTS
@@ -114,6 +130,10 @@ const addTransaction = () => {
       setCategoriesDropdownData(tempCategories);
     }
   }, [categoriesData]);
+
+  useEffect(() => {
+    console.log("--", createTransactionData, createTransactionError);
+  }, [createTransactionData, createTransactionError]);
 
   //FUNCTIONS
   const handlePress = (value: string) => {
@@ -161,6 +181,66 @@ const addTransaction = () => {
     //Setting selected value for first dropwdown
     setSelectedAccountType(item.value?.toLowerCase());
   };
+
+  const handleAddTransaction = () => {
+    setSubmitIsLoading(true);
+
+    router.push({
+      pathname: "/(tabs)",
+      params: {
+        message: "Transaction added!",
+      },
+    });
+    // if (transaction.transaction_amount <= 0) {
+    //   Alert.alert("Invalid Amount", "Please enter a valid transaction amount.");
+    //   return;
+    // }
+
+    // if (transaction.account_id === null) {
+    //   Alert.alert("Missing Account", "Please select an account.");
+    //   return;
+    // }
+
+    // if (transaction.category_id === null) {
+    //   Alert.alert("Missing Category", "Please select a category.");
+    //   return;
+    // }
+
+    // setSubmitIsLoading(true);
+
+    // createTransaction({
+    //   userId,
+    //   payload: transaction,
+    // })
+    //   .then(() => {
+    //     router.push({
+    //       pathname: "/(tabs)",
+    //       params: {
+    //         message: "Transaction added!",
+    //       },
+    //     });
+    //   })
+    //   .catch((error) => {
+    //     // Handle errors if the transaction creation fails
+    //     Alert.alert(
+    //       "Error",
+    //       "There was an error creating the transaction. Please try again."
+    //     );
+    //   });
+  };
+
+  // if (submitIsLoading)
+  //   return (
+  //     <View
+  //       style={{
+  //         flex: 1,
+  //         justifyContent: "center",
+  //         alignItems: "center",
+  //         height: windowHeight,
+  //       }}>
+  //       <ActivityIndicator size="large" color={COLORS["primary-3"]} />
+  //     </View>
+  //   );
 
   if (accountsIsLoading || categoriesIsLoading) {
     return <AddTransactionSkeleton />;
@@ -264,7 +344,6 @@ const addTransaction = () => {
               <View style={styles.optionsContainer}>
                 {activeTab === "account" && (
                   <>
-                    {" "}
                     <View>
                       {renderLabel()}
                       <Dropdown
@@ -311,7 +390,6 @@ const addTransaction = () => {
                 )}
                 {activeTab === "category" && (
                   <>
-                    {" "}
                     <View>
                       {renderLabel()}
                       <Dropdown
@@ -355,8 +433,14 @@ const addTransaction = () => {
                   />
                 )}
 
-                <Pressable style={[styles.addButton]}>
-                  <Text style={[styles.addButtonText]}>Add transaction</Text>
+                <Pressable
+                  style={[styles.addButton]}
+                  onPress={handleAddTransaction}>
+                  {submitIsLoading ? (
+                    <ActivityIndicator size="small" color="#fff" /> // Loading indicator when submitting
+                  ) : (
+                    <Text style={[styles.addButtonText]}>Add transaction</Text> // Normal text when not loading
+                  )}
                 </Pressable>
               </View>
             </LinearGradient>
@@ -544,14 +628,14 @@ const styles = StyleSheet.create({
     fontFamily: "Aller_Bd",
   },
   descriptionInput: {
-    width: windowWidth * 0.7,
+    width: windowWidth * 0.8,
     height: 40,
     borderBottomWidth: 1,
     borderColor: "#gray",
     borderRadius: 0,
     fontSize: 16,
+    paddingHorizontal: 8,
     backgroundColor: "none",
-    paddingLeft: 10,
   },
   addButton: {
     position: "absolute",

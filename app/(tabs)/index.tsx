@@ -8,6 +8,7 @@ import {
 } from "react-native";
 
 import { LinearGradient } from "expo-linear-gradient";
+import Toast from "react-native-toast-message";
 
 import { useGetTransactionsByUserIdQuery } from "@/services/transactionApi";
 import { useGetCategoriesQuery } from "@/services/categoryApi";
@@ -16,6 +17,7 @@ import CategoryContainer from "@/components/CategoryContainer";
 import { COLORS } from "@/utils/constants";
 import { useGetAccountsQuery } from "@/services/accountApi";
 import { useAuth } from "@/context/AuthContext";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
@@ -26,8 +28,9 @@ interface CalculatedAccounts {
   totalCreditAvailable: number;
 }
 
-function HomeScreen({ navigation }: any) {
-  // const { user } = useAuth();
+function HomeScreen({ route }: any) {
+  const { message } = useLocalSearchParams();
+
   const user = { userId: 1 };
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [ledger, setLedger] = useState([]);
@@ -124,6 +127,19 @@ function HomeScreen({ navigation }: any) {
       });
     }
   }, [accountsData]);
+
+  //Showing toast notification when transaction is added
+  useEffect(() => {
+    if (message) {
+      Toast.show({
+        type: "success",
+        text1: message.toString(),
+        position: "bottom",
+        visibilityTime: 3000,
+        bottomOffset: 100,
+      });
+    }
+  }, [message]);
 
   const calculateTransactionsByCategory = (
     categoriesData: any,
