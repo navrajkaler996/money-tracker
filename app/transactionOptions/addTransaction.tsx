@@ -1,15 +1,21 @@
+import AddTransactionSkeleton from "@/components/skeletons/addTransactionSkeleton";
+import { useGetAccountsQuery } from "@/services/accountApi";
+import { useGetCategoriesByUserIdQuery } from "@/services/categoryApi";
 import { COLORS } from "@/utils/constants";
 import { Picker } from "@react-native-picker/picker";
 import { LinearGradient } from "expo-linear-gradient";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  Animated,
   Dimensions,
   FlatList,
   Image,
+  Keyboard,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
@@ -22,23 +28,94 @@ const accountTypeData = [
   { label: "Credit", value: "credit" },
   { label: "Cash", value: "cash" },
 ];
-const accountsData = [
+const accountsData1 = [
   { label: "CIBC", value: "debit" },
   { label: "Credit", value: "credit" },
   { label: "Cash", value: "cash" },
 ];
 
+// const [tamount, setTamount] = useState(0);
 //Component to add a transaction
 const addTransaction = () => {
+  const userId = 59;
+
+  //Fetching accounts using userId
+  const {
+    data: accountsData,
+    isLoading: accountsIsLoading,
+    error: accountsError,
+  } = useGetAccountsQuery(userId);
+
+  //Fetching categories using userId
+  const {
+    data: categoriesData,
+    isLoading: categoriesIsLoading,
+    error: categoriesError,
+  } = useGetCategoriesByUserIdQuery(userId);
+
+  //Final data for API
   const [transaction, setTransaction] = useState({
-    amount: 0,
+    transaction_amount: 0,
+    account_id: null,
+    category_id: null,
+    description: "",
   });
 
+  //State for active tab
   const [activeTab, setActiveTab] = useState("account");
+
+  //List of banks for account dropwdown
+  const [banks, setBanks] = useState([]);
+  //Selected account from first dropwdown
+  const [selectedAccountType, setSelectedAccountType] = useState(null);
+  //Final data for second dropdown
+  const [banksDropdownData, setBanksDropdownData] = useState<any>([]);
+  //List of categorues for category dropwdown
+  const [categoriesDropdownData, setCategoriesDropdownData] = useState([]);
 
   const [value, setValue] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
 
+  //USEEEFECTS
+
+  //Creating data for dropdowns in account tab
+  /////using accountsData from API
+  useEffect(() => {
+    if (accountsData) {
+      const tempBanks = accountsData
+        ?.filter((account: any) => {
+          return account.bank_name !== null && account.bank_name !== undefined;
+        })
+        .map((account: any) => ({
+          accountType: account.account_type,
+          bankName: account.bank_name,
+          accountId: account.account_id,
+        }));
+
+      setBanks(tempBanks);
+    }
+  }, [accountsData]);
+
+  useEffect(() => {
+    if (activeTab === "account") setSelectedAccountType(null);
+  }, [activeTab]);
+
+  //Creating data for dropdown in categoru tab
+  /////using categoriesData from API
+  useEffect(() => {
+    if (categoriesData) {
+      const tempCategories = categoriesData?.map((category: any) => {
+        return {
+          label: category.category_name,
+          value: category.id,
+        };
+      });
+
+      setCategoriesDropdownData(tempCategories);
+    }
+  }, [categoriesData]);
+
+  //FUNCTIONS
   const handlePress = (value: string) => {
     setActiveTab(value);
   };
@@ -46,162 +123,247 @@ const addTransaction = () => {
   const renderLabel = () => {
     return <Text style={[styles.label]}>Select an account</Text>;
   };
+
+  //Handles first dropdown
+  const handleAccountType = (item: any) => {
+    //Creating data for second dropdown
+    if (item.value === "debit" || item.value === "credit") {
+      let tempData = banks.filter(
+        (bank: any) => bank?.accountType === item.value
+      );
+
+      if (tempData?.length > 0) {
+        let banksDataForDropdown = tempData?.map((t: any) => {
+          return {
+            label: t.bankName,
+            value: t.accountId,
+          };
+        });
+        //Setting state for second dropwdown
+        setBanksDropdownData(banksDataForDropdown);
+      }
+    } else {
+      //If cash is selected in first dropdown
+      /////directly fetch cash account id
+      const cashAccountId = accountsData?.find(
+        (account: any) => account.account_type === "cash"
+      );
+
+      //Setting cash account id as final account id
+      setTransaction((prev: any) => {
+        return {
+          ...prev,
+          account_id: cashAccountId.account_id,
+        };
+      });
+    }
+
+    //Setting selected value for first dropwdown
+    setSelectedAccountType(item.value?.toLowerCase());
+  };
+
+  if (accountsIsLoading || categoriesIsLoading) {
+    return <AddTransactionSkeleton />;
+  }
+
   return (
-    <View style={styles.container}>
-      {/* header */}
-      <View style={styles.header}>
-        <Pressable style={styles.leftContainer}>
-          <Image
-            source={require("../../assets/images/icons/back.png")}
-            style={styles.goBackImage}
-          />
-        </Pressable>
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <View style={styles.container}>
+        {/* header */}
+        <View style={styles.header}>
+          <Pressable style={styles.leftContainer}>
+            <Image
+              source={require("../../assets/images/icons/back.png")}
+              style={styles.goBackImage}
+            />
+          </Pressable>
 
-        <Text style={styles.headerText}>Add Transaction</Text>
+          <Text style={styles.headerText}>Add Transaction</Text>
 
-        <View style={styles.rightContainer}></View>
-      </View>
-      <View style={styles.formContainer}>
-        <View style={styles.amountContainer}>
-          <TextInput
-            style={styles.textInput}
-            value={`$${transaction.amount}`}
-          />
+          <View style={styles.rightContainer}></View>
         </View>
+        <View style={styles.formContainer}>
+          <View style={styles.amountContainer}>
+            <Text style={styles.currencySymbol}>$</Text>
+            <TextInput
+              style={styles.textInput}
+              value={transaction.transaction_amount.toString()}
+              onChangeText={(text) => {
+                const numericValue = text.replace(/[^0-9.]/g, "");
 
-        <View style={styles.bottomContainer}>
-          <LinearGradient
-            colors={["#a8ff78", "#78ffd6"]}
-            style={styles.gradient}>
-            <View style={styles.tabsContainer}>
-              <Pressable
-                style={
-                  activeTab === "category"
-                    ? { ...styles.activeTab, ...styles.tab, ...styles.tab1 }
-                    : { ...styles.tab, ...styles.tab1 }
+                if (numericValue === "" || numericValue === "$") {
+                  setTransaction((prev) => ({
+                    ...prev,
+                    transaction_amount: 0,
+                  }));
+                } else {
+                  setTransaction((prev) => ({
+                    ...prev,
+                    transaction_amount: parseFloat(numericValue),
+                  }));
                 }
-                onPress={() => handlePress("category")}>
-                <Text
+              }}
+              keyboardType="numeric"
+            />
+          </View>
+
+          <View style={styles.bottomContainer}>
+            <LinearGradient
+              colors={["#a8ff78", "#78ffd6"]}
+              style={styles.gradient}>
+              <View style={styles.tabsContainer}>
+                <Pressable
                   style={
                     activeTab === "category"
-                      ? [styles.tabText, styles.activeTabText]
-                      : [styles.tabText]
-                  }>
-                  Category
-                </Text>
-              </Pressable>
-              <Pressable
-                style={
-                  activeTab === "account"
-                    ? { ...styles.activeTab, ...styles.tab, ...styles.tab1 }
-                    : { ...styles.tab, ...styles.tab1 }
-                }
-                onPress={() => handlePress("account")}>
-                <Text
+                      ? { ...styles.activeTab, ...styles.tab, ...styles.tab1 }
+                      : { ...styles.tab, ...styles.tab1 }
+                  }
+                  onPress={() => handlePress("category")}>
+                  <Text
+                    style={
+                      activeTab === "category"
+                        ? [styles.tabText, styles.activeTabText]
+                        : [styles.tabText]
+                    }>
+                    Category
+                  </Text>
+                </Pressable>
+                <Pressable
                   style={
                     activeTab === "account"
-                      ? [styles.tabText, styles.activeTabText]
-                      : [styles.tabText]
-                  }>
-                  Account
-                </Text>
-              </Pressable>
-              <Pressable
-                style={
-                  activeTab === "description"
-                    ? { ...styles.activeTab, ...styles.tab, ...styles.tab1 }
-                    : { ...styles.tab, ...styles.tab1 }
-                }
-                onPress={() => handlePress("description")}>
-                <Text
+                      ? { ...styles.activeTab, ...styles.tab, ...styles.tab1 }
+                      : { ...styles.tab, ...styles.tab1 }
+                  }
+                  onPress={() => handlePress("account")}>
+                  <Text
+                    style={
+                      activeTab === "account"
+                        ? [styles.tabText, styles.activeTabText]
+                        : [styles.tabText]
+                    }>
+                    Account
+                  </Text>
+                </Pressable>
+                <Pressable
                   style={
                     activeTab === "description"
-                      ? [styles.tabText, styles.activeTabText]
-                      : [styles.tabText]
-                  }>
-                  Description
-                </Text>
-              </Pressable>
-            </View>
-            <View style={styles.optionsContainer}>
-              {activeTab === "account" && (
-                <>
-                  {" "}
-                  <View>
-                    {renderLabel()}
-                    <Dropdown
-                      style={[styles.dropdown]}
-                      placeholderStyle={styles.placeholderStyle}
-                      selectedTextStyle={styles.selectedTextStyle}
-                      inputSearchStyle={styles.inputSearchStyle}
-                      iconStyle={styles.iconStyle}
-                      data={accountTypeData}
-                      onChange={function (item: any): void {}}
-                      maxHeight={300}
-                      labelField={"label"}
-                      valueField={"value"}
-                      onFocus={() => setIsFocus(true)}></Dropdown>
-                  </View>
-                  <View>
-                    {renderLabel()}
-                    <Dropdown
-                      style={[styles.dropdown]}
-                      placeholderStyle={styles.placeholderStyle}
-                      selectedTextStyle={styles.selectedTextStyle}
-                      inputSearchStyle={styles.inputSearchStyle}
-                      iconStyle={styles.iconStyle}
-                      data={accountsData}
-                      onChange={function (item: any): void {}}
-                      maxHeight={300}
-                      labelField={"label"}
-                      valueField={"value"}
-                      onFocus={() => setIsFocus(true)}></Dropdown>
-                  </View>
-                </>
-              )}
-              {activeTab === "category" && (
-                <>
-                  {" "}
-                  <View>
-                    {renderLabel()}
-                    <Dropdown
-                      style={[styles.dropdown]}
-                      placeholderStyle={styles.placeholderStyle}
-                      selectedTextStyle={styles.selectedTextStyle}
-                      inputSearchStyle={styles.inputSearchStyle}
-                      iconStyle={styles.iconStyle}
-                      data={accountTypeData}
-                      onChange={function (item: any): void {}}
-                      maxHeight={300}
-                      labelField={"label"}
-                      valueField={"value"}
-                      onFocus={() => setIsFocus(true)}></Dropdown>
-                  </View>
-                  <Pressable style={styles.categoryButton}>
-                    <Text style={styles.categoryButtonText}>Add category</Text>
-                  </Pressable>
-                </>
-              )}
-              {activeTab === "description" && (
-                <TextInput
-                  style={[styles.descriptionInput]}
-                  placeholder="First Name"
-                  placeholderTextColor="#666"
-                  multiline={true}
-                  numberOfLines={10}
-                  // value={form.first_name}
-                  // onChangeText={(text) => handleChange("first_name", text)}
-                />
-              )}
+                      ? { ...styles.activeTab, ...styles.tab, ...styles.tab1 }
+                      : { ...styles.tab, ...styles.tab1 }
+                  }
+                  onPress={() => handlePress("description")}>
+                  <Text
+                    style={
+                      activeTab === "description"
+                        ? [styles.tabText, styles.activeTabText]
+                        : [styles.tabText]
+                    }>
+                    Description
+                  </Text>
+                </Pressable>
+              </View>
+              <View style={styles.optionsContainer}>
+                {activeTab === "account" && (
+                  <>
+                    {" "}
+                    <View>
+                      {renderLabel()}
+                      <Dropdown
+                        style={[styles.dropdown]}
+                        placeholderStyle={styles.placeholderStyle}
+                        selectedTextStyle={styles.selectedTextStyle}
+                        inputSearchStyle={styles.inputSearchStyle}
+                        iconStyle={styles.iconStyle}
+                        data={accountTypeData}
+                        onChange={function (item: any): void {
+                          handleAccountType(item);
+                        }}
+                        maxHeight={300}
+                        labelField={"label"}
+                        valueField={"value"}
+                        onFocus={() => setIsFocus(true)}></Dropdown>
+                    </View>
+                    {selectedAccountType !== null &&
+                      selectedAccountType !== "cash" && (
+                        <View>
+                          {renderLabel()}
+                          <Dropdown
+                            style={[styles.dropdown]}
+                            placeholderStyle={styles.placeholderStyle}
+                            selectedTextStyle={styles.selectedTextStyle}
+                            inputSearchStyle={styles.inputSearchStyle}
+                            iconStyle={styles.iconStyle}
+                            data={banksDropdownData}
+                            onChange={function (item: any): void {
+                              setTransaction((prev: any) => {
+                                return {
+                                  ...prev,
+                                  account_id: item.value,
+                                };
+                              });
+                            }}
+                            maxHeight={300}
+                            labelField={"label"}
+                            valueField={"value"}
+                            onFocus={() => setIsFocus(true)}></Dropdown>
+                        </View>
+                      )}
+                  </>
+                )}
+                {activeTab === "category" && (
+                  <>
+                    {" "}
+                    <View>
+                      {renderLabel()}
+                      <Dropdown
+                        style={[styles.dropdown]}
+                        placeholderStyle={styles.placeholderStyle}
+                        selectedTextStyle={styles.selectedTextStyle}
+                        inputSearchStyle={styles.inputSearchStyle}
+                        iconStyle={styles.iconStyle}
+                        data={categoriesDropdownData}
+                        onChange={function (item: any): void {
+                          setTransaction((prev: any) => {
+                            return {
+                              ...prev,
+                              category_id: item.value,
+                            };
+                          });
+                        }}
+                        maxHeight={300}
+                        labelField={"label"}
+                        valueField={"value"}
+                        onFocus={() => setIsFocus(true)}></Dropdown>
+                    </View>
+                    <Pressable style={styles.categoryButton}>
+                      <Text style={styles.categoryButtonText}>
+                        Add category
+                      </Text>
+                    </Pressable>
+                  </>
+                )}
+                {activeTab === "description" && (
+                  <TextInput
+                    style={[styles.descriptionInput]}
+                    placeholder="Add a description"
+                    placeholderTextColor="#666"
+                    multiline={true}
+                    // numberOfLines={10}
+                    value={transaction.description}
+                    onChangeText={(text) =>
+                      setTransaction({ ...transaction, description: text })
+                    }
+                  />
+                )}
 
-              <Pressable style={[styles.addButton]}>
-                <Text style={[styles.addButtonText]}>Add transaction</Text>
-              </Pressable>
-            </View>
-          </LinearGradient>
+                <Pressable style={[styles.addButton]}>
+                  <Text style={[styles.addButtonText]}>Add transaction</Text>
+                </Pressable>
+              </View>
+            </LinearGradient>
+          </View>
         </View>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -254,7 +416,6 @@ const styles = StyleSheet.create({
     width: windowWidth,
     height: windowHeight * 0.85,
     marginTop: windowHeight * 0.15,
-
     alignItems: "center",
   },
   gradient: {
@@ -265,12 +426,18 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 50,
   },
   textInput: {
-    fontSize: 90,
+    fontSize: 60,
     height: 90,
+    textAlign: "center",
+  },
+  currencySymbol: {
+    fontSize: 60,
   },
   amountContainer: {
     flex: 4,
     justifyContent: "center",
+    flexDirection: "row",
+    alignItems: "center",
   },
   bottomContainer: {
     flex: 6,
