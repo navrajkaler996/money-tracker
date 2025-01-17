@@ -29,7 +29,7 @@ interface CalculatedAccounts {
 }
 
 function HomeScreen({ route }: any) {
-  const { message } = useLocalSearchParams();
+  const { message, status } = useLocalSearchParams();
 
   const user = { userId: 1 };
   const [totalExpenses, setTotalExpenses] = useState(0);
@@ -130,7 +130,15 @@ function HomeScreen({ route }: any) {
 
   //Showing toast notification when transaction is added
   useEffect(() => {
-    if (message) {
+    if (status === "success") {
+      Toast.show({
+        type: "success",
+        text1: message.toString(),
+        position: "bottom",
+        visibilityTime: 3000,
+        bottomOffset: 100,
+      });
+    } else if (status === "failed") {
       Toast.show({
         type: "success",
         text1: message.toString(),
@@ -139,7 +147,7 @@ function HomeScreen({ route }: any) {
         bottomOffset: 100,
       });
     }
-  }, [message]);
+  }, [message, status]);
 
   const calculateTransactionsByCategory = (
     categoriesData: any,

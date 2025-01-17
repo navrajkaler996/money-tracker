@@ -1,18 +1,8 @@
-import AddTransactionSkeleton from "@/components/skeletons/addTransactionSkeleton";
-import { useGetAccountsQuery } from "@/services/accountApi";
-import { useGetCategoriesByUserIdQuery } from "@/services/categoryApi";
-import { useCreateTransactionByUserIdMutation } from "@/services/transactionApi";
-import { COLORS } from "@/utils/constants";
-import { Picker } from "@react-native-picker/picker";
-import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Animated,
   Dimensions,
-  FlatList,
   Image,
   Keyboard,
   Pressable,
@@ -22,21 +12,20 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import { Dropdown } from "react-native-element-dropdown";
+
+import { useGetAccountsQuery } from "@/services/accountApi";
+import { useGetCategoriesByUserIdQuery } from "@/services/categoryApi";
+import { useCreateTransactionByUserIdMutation } from "@/services/transactionApi";
+
+import AddTransactionSkeleton from "@/components/skeletons/addTransactionSkeleton";
+
+import { ACCOUNT_TYPES, COLORS } from "@/utils/constants";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
-
-const accountTypeData = [
-  { label: "Debit", value: "debit" },
-  { label: "Credit", value: "credit" },
-  { label: "Cash", value: "cash" },
-];
-const accountsData1 = [
-  { label: "CIBC", value: "debit" },
-  { label: "Credit", value: "credit" },
-  { label: "Cash", value: "cash" },
-];
 
 // const [tamount, setTamount] = useState(0);
 //Component to add a transaction
@@ -45,20 +34,21 @@ const addTransaction = () => {
 
   const userId = 59;
 
-  //Fetching accounts using userId
+  //Fetching accounts using userId API
   const {
     data: accountsData,
     isLoading: accountsIsLoading,
     error: accountsError,
   } = useGetAccountsQuery(userId);
 
-  //Fetching categories using userId
+  //Fetching categories using userId API
   const {
     data: categoriesData,
     isLoading: categoriesIsLoading,
     error: categoriesError,
   } = useGetCategoriesByUserIdQuery(userId);
 
+  //Creating transaction API
   const [
     createTransaction,
     {
@@ -131,17 +121,14 @@ const addTransaction = () => {
     }
   }, [categoriesData]);
 
-  useEffect(() => {
-    console.log("--", createTransactionData, createTransactionError);
-  }, [createTransactionData, createTransactionError]);
-
   //FUNCTIONS
   const handlePress = (value: string) => {
     setActiveTab(value);
   };
 
-  const renderLabel = () => {
-    return <Text style={[styles.label]}>Select an account</Text>;
+  //Rendering labels for dropdowns
+  const renderLabel = (label: string) => {
+    return <Text style={[styles.label]}>{label}</Text>;
   };
 
   //Handles first dropdown
@@ -182,65 +169,51 @@ const addTransaction = () => {
     setSelectedAccountType(item.value?.toLowerCase());
   };
 
+  //Handle form submit
   const handleAddTransaction = () => {
+    if (transaction.transaction_amount <= 0) {
+      Alert.alert("Invalid Amount", "Please enter a valid transaction amount.");
+      return;
+    }
+
+    if (transaction.account_id === null) {
+      Alert.alert("Missing Account", "Please select an account.");
+      return;
+    }
+
+    if (transaction.category_id === null) {
+      Alert.alert("Missing Category", "Please select a category.");
+      return;
+    }
+
     setSubmitIsLoading(true);
 
-    router.push({
-      pathname: "/(tabs)",
-      params: {
-        message: "Transaction added!",
-      },
-    });
-    // if (transaction.transaction_amount <= 0) {
-    //   Alert.alert("Invalid Amount", "Please enter a valid transaction amount.");
-    //   return;
-    // }
+    createTransaction({
+      userId,
+      payload: transaction,
+    })
+      .then(() => {
+        setSubmitIsLoading(false);
+        router.push({
+          pathname: "/(tabs)",
+          params: {
+            status: "success",
+            message: "Transaction added!",
+          },
+        });
+      })
+      .catch((error) => {
+        setSubmitIsLoading(false);
 
-    // if (transaction.account_id === null) {
-    //   Alert.alert("Missing Account", "Please select an account.");
-    //   return;
-    // }
-
-    // if (transaction.category_id === null) {
-    //   Alert.alert("Missing Category", "Please select a category.");
-    //   return;
-    // }
-
-    // setSubmitIsLoading(true);
-
-    // createTransaction({
-    //   userId,
-    //   payload: transaction,
-    // })
-    //   .then(() => {
-    //     router.push({
-    //       pathname: "/(tabs)",
-    //       params: {
-    //         message: "Transaction added!",
-    //       },
-    //     });
-    //   })
-    //   .catch((error) => {
-    //     // Handle errors if the transaction creation fails
-    //     Alert.alert(
-    //       "Error",
-    //       "There was an error creating the transaction. Please try again."
-    //     );
-    //   });
+        router.push({
+          pathname: "/(tabs)",
+          params: {
+            status: "failed",
+            message: "Failed to add transaction!",
+          },
+        });
+      });
   };
-
-  // if (submitIsLoading)
-  //   return (
-  //     <View
-  //       style={{
-  //         flex: 1,
-  //         justifyContent: "center",
-  //         alignItems: "center",
-  //         height: windowHeight,
-  //       }}>
-  //       <ActivityIndicator size="large" color={COLORS["primary-3"]} />
-  //     </View>
-  //   );
 
   if (accountsIsLoading || categoriesIsLoading) {
     return <AddTransactionSkeleton />;
@@ -345,14 +318,14 @@ const addTransaction = () => {
                 {activeTab === "account" && (
                   <>
                     <View>
-                      {renderLabel()}
+                      {renderLabel("Select an account")}
                       <Dropdown
                         style={[styles.dropdown]}
                         placeholderStyle={styles.placeholderStyle}
                         selectedTextStyle={styles.selectedTextStyle}
                         inputSearchStyle={styles.inputSearchStyle}
                         iconStyle={styles.iconStyle}
-                        data={accountTypeData}
+                        data={ACCOUNT_TYPES}
                         onChange={function (item: any): void {
                           handleAccountType(item);
                         }}
@@ -364,7 +337,7 @@ const addTransaction = () => {
                     {selectedAccountType !== null &&
                       selectedAccountType !== "cash" && (
                         <View>
-                          {renderLabel()}
+                          {renderLabel("Select your bank")}
                           <Dropdown
                             style={[styles.dropdown]}
                             placeholderStyle={styles.placeholderStyle}
@@ -391,7 +364,7 @@ const addTransaction = () => {
                 {activeTab === "category" && (
                   <>
                     <View>
-                      {renderLabel()}
+                      {renderLabel("Select a category")}
                       <Dropdown
                         style={[styles.dropdown]}
                         placeholderStyle={styles.placeholderStyle}
@@ -437,9 +410,9 @@ const addTransaction = () => {
                   style={[styles.addButton]}
                   onPress={handleAddTransaction}>
                   {submitIsLoading ? (
-                    <ActivityIndicator size="small" color="#fff" /> // Loading indicator when submitting
+                    <ActivityIndicator size="small" color="#fff" />
                   ) : (
-                    <Text style={[styles.addButtonText]}>Add transaction</Text> // Normal text when not loading
+                    <Text style={[styles.addButtonText]}>Add transaction</Text>
                   )}
                 </Pressable>
               </View>
@@ -590,7 +563,6 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   label: {
-    // position: "absolute",
     // left: 0,
     // top: 8,
     zIndex: 999,
