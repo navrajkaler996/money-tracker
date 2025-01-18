@@ -67,6 +67,8 @@ const RecentTransactions = () => {
     return transaction;
   };
 
+  const getMonth = (month: string) => MONTHS[Number(month)];
+
   useEffect(() => {
     if (transactionsData && categoriesData && accountsData) {
       const result = createTransaction(
@@ -78,8 +80,6 @@ const RecentTransactions = () => {
       if (result) setTransaction(result);
     }
   }, [transactionsData, categoriesData, accountsData]);
-
-  const getMonth = (month: string) => MONTHS[Number(month)];
 
   return (
     <View style={styles.container}>
@@ -138,9 +138,9 @@ const RecentTransactions = () => {
                       <Text style={styles.categoryText}>
                         {item.categoryName}
                       </Text>
-                      <Text style={styles.amountText}>
+                      {/* <Text style={styles.amountText}>
                         -${item.transactionAmount}
-                      </Text>
+                      </Text> */}
                       <Text style={styles.accountNameText}>
                         {item.accountType !== "cash"
                           ? `${item.bankName} - ${item.accountType}`
@@ -148,6 +148,9 @@ const RecentTransactions = () => {
                       </Text>
                       <Text style={styles.accountNumberText}>
                         {item.description}
+                      </Text>
+                      <Text style={styles.amountText}>
+                        -${item.transactionAmount}
                       </Text>
                     </View>
                   </LinearGradient>
@@ -295,6 +298,9 @@ const styles = StyleSheet.create({
   amountText: {
     fontFamily: "Aller_Bd",
     color: "red",
+    position: "absolute",
+    top: 5,
+    right: 10,
   },
   accountNameText: { fontFamily: "Aller_Rg", textTransform: "uppercase" },
   accountNumberText: { fontFamily: "Aller_Rg" },

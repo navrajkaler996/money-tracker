@@ -5,6 +5,7 @@ export const COLORS = {
   "primary-4": "#009f88",
   "active-yellow": "#FFEB3B",
   "active-dark-green": "#4fa94d",
+  "calender-color-1": "#d9ffc3",
 };
 
 export const ACCOUNT_TYPES = [
