@@ -12,3 +12,18 @@ export const ACCOUNT_TYPES = [
   { label: "Credit", value: "credit" },
   { label: "Cash", value: "cash" },
 ];
+
+export const MONTHS = [
+  "jan",
+  "feb",
+  "mar",
+  "apr",
+  "may",
+  "jun",
+  "jul",
+  "aug",
+  "sep",
+  "oct",
+  "nov",
+  "dec",
+];

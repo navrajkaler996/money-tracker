@@ -1,5 +1,9 @@
-import { COLORS } from "@/utils/constants";
+import { useGetAccountsQuery } from "@/services/accountApi";
+import { useGetCategoriesByUserIdQuery } from "@/services/categoryApi";
+import { useGetTransactionsByUserIdQuery } from "@/services/transactionApi";
+import { COLORS, MONTHS } from "@/utils/constants";
 import { LinearGradient } from "expo-linear-gradient";
+import { useEffect, useState } from "react";
 import {
   Dimensions,
   FlatList,
@@ -13,91 +17,70 @@ import {
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
-const transactions = [
-  {
-    day: 15,
-    month: "Jan",
-    category: "Walmart",
-    amount: 200,
-    type: "expense",
-    account: "cibc-debit",
-    accountNumber: "####-####-####-4098",
-  },
-  {
-    day: 15,
-    month: "Jan",
-    category: "Walmart",
-    amount: 200,
-    type: "expense",
-    account: "cibc-debit",
-    accountNumber: "####-####-####-4098",
-  },
-  {
-    day: 15,
-    month: "Jan",
-    category: "Walmart",
-    amount: 200,
-    type: "expense",
-    account: "cibc-debit",
-    accountNumber: "####-####-####-4098",
-  },
-  {
-    day: 15,
-    month: "Jan",
-    category: "Walmart",
-    amount: 200,
-    type: "expense",
-    account: "cibc-debit",
-    accountNumber: "####-####-####-4098",
-  },
-  {
-    day: 15,
-    month: "Jan",
-    category: "Walmart",
-    amount: 200,
-    type: "expense",
-    account: "cibc-debit",
-    accountNumber: "####-####-####-4098",
-  },
-  {
-    day: 15,
-    month: "Jan",
-    category: "Walmart",
-    amount: 200,
-    type: "expense",
-    account: "cibc-debit",
-    accountNumber: "####-####-####-4098",
-  },
-  {
-    day: 15,
-    month: "Jan",
-    category: "Walmart",
-    amount: 200,
-    type: "expense",
-    account: "cibc-debit",
-    accountNumber: "####-####-####-4098",
-  },
-  {
-    day: 15,
-    month: "Jan",
-    category: "Walmart",
-    amount: 200,
-    type: "expense",
-    account: "cibc-debit",
-    accountNumber: "####-####-####-4098",
-  },
-  {
-    day: 15,
-    month: "Jan",
-    category: "Walmart",
-    amount: 200,
-    type: "expense",
-    account: "cibc-debit",
-    accountNumber: "####-####-####-4098",
-  },
-];
-
 const RecentTransactions = () => {
+  const {
+    data: transactionsData,
+    isLoading: transactionIsLoading,
+    refetch: transactionRefect,
+  } = useGetTransactionsByUserIdQuery({
+    userId: 59,
+    month: 1,
+    year: 2025,
+  });
+
+  const { data: categoriesData, isLoading: categoriesIsLoading } =
+    useGetCategoriesByUserIdQuery(59);
+
+  const {
+    data: accountsData,
+    isLoading: accountsIsLoading,
+    error: accountsError,
+  } = useGetAccountsQuery(59);
+
+  const [transaction, setTransaction] = useState([]);
+
+  const createTransaction = (
+    transactionsData: any,
+    categoriesData: any,
+    accountsData: any
+  ) => {
+    let transaction = transactionsData?.map((transaction: any) => {
+      const category = categoriesData.find(
+        (cat: any) => cat.id === transaction.category_id
+      );
+
+      const account = accountsData.find(
+        (account: any) => account.account_id === transaction.account_id
+      );
+
+      return {
+        transactionAmount: transaction.transaction_amount,
+        categoryName: category ? category.category_name : null,
+        accountType: account ? account.account_type : null,
+        bankName: account ? account.bank_name : null,
+        transactionDay: new Date(transaction.transaction_date).getDate(),
+        transactionMonth: new Date(transaction.transaction_date).getMonth(),
+        description: transaction.description,
+      };
+    });
+
+    return transaction;
+  };
+
+  useEffect(() => {
+    if (transactionsData && categoriesData && accountsData) {
+      const result = createTransaction(
+        transactionsData,
+        categoriesData,
+        accountsData
+      );
+
+      if (result) setTransaction(result);
+    }
+  }, [transactionsData, categoriesData, accountsData]);
+
+  const getMonth = (month: string) => MONTHS[Number(month)];
+
   return (
     <View style={styles.container}>
       {/* header */}
@@ -133,48 +116,47 @@ const RecentTransactions = () => {
         </LinearGradient>
       </View>
 
-      <View style={styles.transactionListContainer}>
-        <View style={styles.transactionGradientContainer}>
-          <FlatList
-            data={transactions}
-            renderItem={(item) => (
-              <LinearGradient
-                colors={["#a8ff78", "#78ffd6"]}
-                style={styles.transactionItem}>
-                <View style={styles.day}>
-                  <Text style={styles.textNumbers}>15</Text>{" "}
-                  <Text style={{ ...styles.textHeading, fontSize: 16 }}>
-                    Jan
-                  </Text>
-                </View>
-                <View style={styles.transactionInfo}>
-                  <Text style={styles.categoryText}>Walmart</Text>
-                  <Text style={styles.amountText}>-$200</Text>
-                  <Text style={styles.accountNameText}>Cibc - debit</Text>
-                  <Text style={styles.accountNumberText}>
-                    {" "}
-                    ####-####-####-4098
-                  </Text>
-                </View>
-              </LinearGradient>
-            )}
-          />
-          {/* <LinearGradient
-            colors={["#a8ff78", "#78ffd6"]}
-            style={styles.transactionItem}>
-            <View style={styles.day}>
-              <Text style={styles.textNumbers}>15</Text>{" "}
-              <Text style={{ ...styles.textHeading, fontSize: 16 }}>Jan</Text>
-            </View>
-            <View style={styles.transactionInfo}>
-              <Text style={styles.categoryText}>Walmart</Text>
-              <Text style={styles.amountText}>-$200</Text>
-              <Text style={styles.accountNameText}>Cibc - debit</Text>
-              <Text style={styles.accountNumberText}> ####-####-####-4098</Text>
-            </View>
-          </LinearGradient> */}
+      {!transactionIsLoading && transaction?.length > 0 && (
+        <View style={styles.transactionListContainer}>
+          <View style={styles.transactionGradientContainer}>
+            <FlatList
+              data={transaction}
+              renderItem={({ item }: any) => {
+                return (
+                  <LinearGradient
+                    colors={["#fff", "#fff"]}
+                    style={styles.transactionItem}>
+                    <View style={styles.day}>
+                      <Text style={styles.textNumbers}>
+                        {item.transactionDay}
+                      </Text>
+                      <Text style={{ ...styles.textHeading, fontSize: 16 }}>
+                        {getMonth(item.transactionMonth)}
+                      </Text>
+                    </View>
+                    <View style={styles.transactionInfo}>
+                      <Text style={styles.categoryText}>
+                        {item.categoryName}
+                      </Text>
+                      <Text style={styles.amountText}>
+                        -${item.transactionAmount}
+                      </Text>
+                      <Text style={styles.accountNameText}>
+                        {item.accountType !== "cash"
+                          ? `${item.bankName} - ${item.accountType}`
+                          : item.accountType}
+                      </Text>
+                      <Text style={styles.accountNumberText}>
+                        {item.description}
+                      </Text>
+                    </View>
+                  </LinearGradient>
+                );
+              }}
+            />
+          </View>
         </View>
-      </View>
+      )}
     </View>
   );
 };
@@ -182,6 +164,7 @@ const RecentTransactions = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#fff",
   },
   header: {
     position: "absolute",
@@ -273,14 +256,14 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   transactionGradientContainer: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    // shadowColor: "#000",
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.25,
+    // shadowRadius: 3.84,
     gap: 20,
   },
   transactionItem: {
-    width: windowWidth * 0.95,
+    width: windowWidth,
     minHeight: 100,
     flexDirection: "row",
     marginBottom: 30,
@@ -291,12 +274,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRightColor: "#ddd",
     borderRightWidth: 1,
+    backgroundColor: COLORS["primary-1"],
   },
   transactionInfo: {
     flex: 7,
     gap: 5,
     paddingLeft: 10,
     justifyContent: "center",
+    // backgroundColor: "#ddd",
+    // borderTopColor: "#ddd",
+    // borderTopWidth: 1,
+    // borderBottomColor: "#ddd",
+    // borderBottomWidth: 1,
   },
   categoryText: {
     fontFamily: "Aller_Bd",
