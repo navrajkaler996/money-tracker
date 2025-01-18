@@ -11,13 +11,16 @@ import { LinearGradient } from "expo-linear-gradient";
 import Toast from "react-native-toast-message";
 
 import { useGetTransactionsByUserIdQuery } from "@/services/transactionApi";
-import { useGetCategoriesQuery } from "@/services/categoryApi";
+import {
+  useGetCategoriesByUserIdQuery,
+  useGetCategoriesQuery,
+} from "@/services/categoryApi";
 import CategoryContainer from "@/components/CategoryContainer";
 
 import { COLORS } from "@/utils/constants";
 import { useGetAccountsQuery } from "@/services/accountApi";
 import { useAuth } from "@/context/AuthContext";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
@@ -31,7 +34,7 @@ interface CalculatedAccounts {
 function HomeScreen({ route }: any) {
   const { message, status } = useLocalSearchParams();
 
-  const user = { userId: 1 };
+  const user = { userId: 59 };
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [ledger, setLedger] = useState([]);
   const [calculatedAccounts, setCalculatedAccounts] =
@@ -41,20 +44,29 @@ function HomeScreen({ route }: any) {
       totalCreditAvailable: 0,
     });
 
-  const { data: transactionsData, isLoading: transactionIsLoading } =
-    useGetTransactionsByUserIdQuery({
-      userId: 1,
-      month: 12,
-      year: 2024,
-    });
+  const {
+    data: transactionsData,
+    isLoading: transactionIsLoading,
+    refetch: transactionRefect,
+  } = useGetTransactionsByUserIdQuery({
+    userId: 59,
+    month: 1,
+    year: 2025,
+  });
   const { data: categoriesData, isLoading: categoriesIsLoading } =
-    useGetCategoriesQuery(null);
+    useGetCategoriesByUserIdQuery(59);
 
   const {
     data: accountsData,
     isLoading: accountsIsLoading,
     error: accountsError,
   } = useGetAccountsQuery(user.userId);
+
+  //Using useFocusEffect hook to call transactionRefect()
+  /////This will update the transaction data
+  useFocusEffect(() => {
+    transactionRefect();
+  });
 
   //Creating expenses for user
   useEffect(() => {
@@ -160,7 +172,7 @@ function HomeScreen({ route }: any) {
 
     transactionsData.forEach((transaction: any) => {
       transactionsByCategory.forEach((category: any) => {
-        if (transaction.categoryId === category.id) {
+        if (transaction.category_id === category.id) {
           category.total_amount += transaction.transaction_amount;
         }
       });

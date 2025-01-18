@@ -13,7 +13,7 @@ import {
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { Dropdown } from "react-native-element-dropdown";
 
 import { useGetAccountsQuery } from "@/services/accountApi";
@@ -27,7 +27,6 @@ import { ACCOUNT_TYPES, COLORS } from "@/utils/constants";
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
-// const [tamount, setTamount] = useState(0);
 //Component to add a transaction
 const addTransaction = () => {
   const router = useRouter();
@@ -83,6 +82,16 @@ const addTransaction = () => {
   const [isFocus, setIsFocus] = useState(false);
 
   //USEEEFECTS
+
+  //Initializing transaction
+  useEffect(() => {
+    setTransaction({
+      transaction_amount: 0,
+      account_id: null,
+      category_id: null,
+      description: "",
+    });
+  }, []);
 
   //Creating data for dropdowns in account tab
   /////using accountsData from API
@@ -563,8 +572,6 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   label: {
-    // left: 0,
-    // top: 8,
     zIndex: 999,
     paddingHorizontal: 8,
     fontSize: 14,

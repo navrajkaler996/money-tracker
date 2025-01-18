@@ -29,7 +29,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ ledger }) => {
 const styles = StyleSheet.create({
   cardGradient: {
     width: windowWidth * 0.25,
-    height: 130,
+    height: 150,
     marginBottom: 15,
     paddingTop: 5,
     paddingBottom: 5,
@@ -47,12 +47,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   cardHeading: {
-    fontSize: 14,
-    fontFamily: "Aller_Bd",
-    textTransform: "uppercase",
+    fontSize: 16,
+    letterSpacing: 0.4,
+    fontFamily: "Aller_Rg",
+    textTransform: "capitalize",
   },
   cardNumbers: {
-    fontSize: 14,
+    fontSize: 18,
     fontFamily: "Aller_Bd",
     textTransform: "uppercase",
   },

@@ -18,10 +18,10 @@ const CategoryContainer: React.FC<CategoryContainerProps> = ({ ledger }) => {
 const styles = StyleSheet.create({
   mainContainer: {
     marginTop: 40,
-    width: windowWidth * 0.95,
+    width: windowWidth * 0.9,
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-evenly",
+    justifyContent: "space-between",
   },
 });
 
