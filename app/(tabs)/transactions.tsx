@@ -50,6 +50,8 @@ function TransactionsScreen() {
   const handlePress = (value: string) => {
     if (value === "add-transaction") {
       navigation.navigate("transactionOptions/addTransaction");
+    } else if (value === "transactions-by-category") {
+      navigation.navigate("transactionOptions/transactionsByCategory");
     } else navigation.navigate("transactionOptions/recentTransactions");
   };
 
@@ -132,7 +134,9 @@ function TransactionsScreen() {
           </LinearGradient>
         </TouchableOpacity>
 
-        <View style={styles.openContainer}>
+        <TouchableOpacity
+          style={styles.openContainer}
+          onPress={() => handlePress("transactions-by-category")}>
           <LinearGradient colors={["#a8ff78", "#78ffd6"]} style={styles.option}>
             <Text style={styles.optionHeading}> Transactions by category</Text>
             <Image
@@ -140,7 +144,7 @@ function TransactionsScreen() {
               source={require("../../assets/images/icons/transaction-categories.png")}
             />
           </LinearGradient>
-        </View>
+        </TouchableOpacity>
         <View style={styles.openContainer}>
           <LinearGradient colors={["#a8ff78", "#78ffd6"]} style={styles.option}>
             <Text style={styles.optionHeading}> Upcoming transactions</Text>

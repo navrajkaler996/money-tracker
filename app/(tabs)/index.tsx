@@ -11,10 +11,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import Toast from "react-native-toast-message";
 
 import { useGetTransactionsByUserIdQuery } from "@/services/transactionApi";
-import {
-  useGetCategoriesByUserIdQuery,
-  useGetCategoriesQuery,
-} from "@/services/categoryApi";
+import { useGetCategoriesByUserIdQuery } from "@/services/categoryApi";
 import CategoryContainer from "@/components/CategoryContainer";
 
 import { COLORS } from "@/utils/constants";
@@ -31,7 +28,9 @@ interface CalculatedAccounts {
   totalCreditAvailable: number;
 }
 
-function HomeScreen({ route }: any) {
+function HomeScreen() {
+  const router = useRouter();
+
   const { message, status } = useLocalSearchParams();
 
   const user = { userId: 59 };
@@ -181,6 +180,15 @@ function HomeScreen({ route }: any) {
     setLedger(transactionsByCategory);
   };
 
+  const handleCategory = (categoryId) => {
+    router.push({
+      pathname: "transactionOptions/transactionsByCategory",
+      params: {
+        categoryId,
+      },
+    });
+  };
+
   if (transactionIsLoading && categoriesIsLoading && accountsIsLoading)
     return (
       <View
@@ -233,7 +241,9 @@ function HomeScreen({ route }: any) {
         </LinearGradient>
       </View>
 
-      {ledger.length > 0 && <CategoryContainer ledger={ledger} />}
+      {ledger.length > 0 && (
+        <CategoryContainer ledger={ledger} handleCategory={handleCategory} />
+      )}
     </View>
   );
 }

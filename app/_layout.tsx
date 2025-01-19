@@ -50,6 +50,11 @@ export default function AppLayout() {
             options={{ headerShown: false }}
           />
         </Stack>
+        {/* <Stack.Screen
+          name="transactionOptions/transactionsByCategory"
+          options={{ headerShown: false }}
+        /> */}
+
         <Toast config={toastConfig} />
       </Provider>
     </AuthProvider>

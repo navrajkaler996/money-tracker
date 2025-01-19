@@ -5,12 +5,16 @@ const windowWidth = Dimensions.get("window").width;
 
 type CategoryContainerProps = {
   ledger: any;
+  handleCategory: Function;
 };
 
-const CategoryContainer: React.FC<CategoryContainerProps> = ({ ledger }) => {
+const CategoryContainer: React.FC<CategoryContainerProps> = ({
+  ledger,
+  handleCategory,
+}) => {
   return (
     <View style={styles.mainContainer}>
-      <CategoryCard ledger={ledger} />
+      <CategoryCard ledger={ledger} handleCategory={handleCategory} />
     </View>
   );
 };

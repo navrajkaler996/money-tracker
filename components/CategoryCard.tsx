@@ -1,16 +1,30 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { StyleSheet, Text, View, Dimensions, Image } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Dimensions,
+  Image,
+  TouchableOpacity,
+} from "react-native";
 
 const windowWidth = Dimensions.get("window").width;
 
 type CategoryCardProps = {
   ledger: any;
+  handleCategory: Function;
 };
 
-const CategoryCard: React.FC<CategoryCardProps> = ({ ledger }) => {
+const CategoryCard: React.FC<CategoryCardProps> = ({
+  ledger,
+  handleCategory,
+}) => {
   return ledger?.length > 0
     ? ledger.map((data: any) => (
-        <View style={styles.cardShadow} key={data.id}>
+        <TouchableOpacity
+          style={styles.cardShadow}
+          key={data.id}
+          onPress={() => handleCategory(data.id)}>
           <LinearGradient
             colors={["#a8ff78", "#78ffd6"]}
             style={styles.cardGradient}>
@@ -21,7 +35,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ ledger }) => {
             />
             <Text style={styles.cardNumbers}>${data.total_amount}</Text>
           </LinearGradient>
-        </View>
+        </TouchableOpacity>
       ))
     : null;
 };

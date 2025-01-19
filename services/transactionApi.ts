@@ -10,6 +10,10 @@ export const transactionApi = createApi({
       query: ({ userId, month, year }) =>
         `${userId}?month=${month}&year=${year}`,
     }),
+    getTransactionsByCategoryId: builder.query({
+      query: ({ userId, categoryId }) => `/fetch/${userId}/${categoryId}`,
+    }),
+
     createTransactionByUserId: builder.mutation({
       query: ({ userId, payload }) => ({
         url: `/create/${userId}`,
@@ -23,4 +27,5 @@ export const transactionApi = createApi({
 export const {
   useGetTransactionsByUserIdQuery,
   useCreateTransactionByUserIdMutation,
+  useGetTransactionsByCategoryIdQuery,
 } = transactionApi;
