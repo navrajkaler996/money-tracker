@@ -14,7 +14,8 @@ import { Calendar } from "react-native-calendars";
 
 import { useGetTransactionsByUserIdQuery } from "@/services/transactionApi";
 
-import { COLORS } from "@/utils/constants";
+import { COLORS, STYLES } from "@/utils/constants";
+import { SHADOW_1 } from "@/utils/styles";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
@@ -124,7 +125,9 @@ function TransactionsScreen() {
         />
       </View>
       <ScrollView contentContainerStyle={styles.bottomContainer}>
-        <TouchableOpacity style={styles.openContainer} onPress={handlePress}>
+        <TouchableOpacity
+          style={[styles.openContainer, STYLES.SHADOW_1]}
+          onPress={handlePress}>
           <LinearGradient colors={["#a8ff78", "#78ffd6"]} style={styles.option}>
             <Text style={styles.optionHeading}>Recent Transactions</Text>
             <Image
@@ -135,7 +138,7 @@ function TransactionsScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.openContainer}
+          style={[styles.openContainer, STYLES.SHADOW_1]}
           onPress={() => handlePress("transactions-by-category")}>
           <LinearGradient colors={["#a8ff78", "#78ffd6"]} style={styles.option}>
             <Text style={styles.optionHeading}> Transactions by category</Text>
@@ -145,7 +148,7 @@ function TransactionsScreen() {
             />
           </LinearGradient>
         </TouchableOpacity>
-        <View style={styles.openContainer}>
+        <View style={[styles.openContainer, STYLES.SHADOW_1]}>
           <LinearGradient colors={["#a8ff78", "#78ffd6"]} style={styles.option}>
             <Text style={styles.optionHeading}> Upcoming transactions</Text>
             <Image
@@ -155,7 +158,7 @@ function TransactionsScreen() {
           </LinearGradient>
         </View>
         <TouchableOpacity
-          style={styles.openContainer}
+          style={[styles.openContainer, STYLES.SHADOW_1]}
           onPress={() => handlePress("add-transaction")}>
           <LinearGradient colors={["#a8ff78", "#78ffd6"]} style={styles.option}>
             <Text style={styles.optionHeading}> Add transaction</Text>
@@ -185,16 +188,7 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-around",
   },
-  openContainer: {
-    // Shadow styles for iOS
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-
-    // Elevation for Android
-    elevation: 5,
-  },
+  openContainer: {},
   option: {
     width: windowWidth * 0.35,
     height: windowHeight * 0.15,

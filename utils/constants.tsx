@@ -28,3 +28,17 @@ export const MONTHS = [
   "nov",
   "dec",
 ];
+
+//CSS
+
+export const STYLES = {
+  SHADOW_1: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+
+    // Elevation for Android
+    elevation: 5,
+  },
+};
