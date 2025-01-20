@@ -15,12 +15,13 @@ import { useGetCategoriesByUserIdQuery } from "@/services/categoryApi";
 import { useGetTransactionsByCategoryIdQuery } from "@/services/transactionApi";
 
 import { COLORS, MONTHS } from "@/utils/constants";
-import { useFocusEffect, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useNavigation } from "expo-router";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
 const TransactionsByCategory = () => {
+  const navigation = useNavigation();
   const { categoryId } = useLocalSearchParams();
 
   const [transaction, setTransaction] = useState([]);
@@ -85,11 +86,14 @@ const TransactionsByCategory = () => {
 
   useEffect(() => {
     if (categoryId) setSelectedCategory(Number(categoryId));
+    else setSelectedCategory(-1);
   }, [categoryId]);
 
   const handleCategory = (category: any) => {
     setSelectedCategory(category.id);
   };
+
+  const handleAddTransaction = () => {};
 
   return (
     <View style={styles.container}>
@@ -104,7 +108,16 @@ const TransactionsByCategory = () => {
 
         <Text style={styles.headerText}>Transactions</Text>
 
-        <View style={styles.rightContainer}></View>
+        <Pressable
+          style={styles.rightContainer}
+          onPress={() => {
+            navigation.navigate("transactionOptions/addTransaction");
+          }}>
+          <Image
+            style={[styles.addTransactionImage]}
+            source={require("../../assets/images/icons/add-transaction.png")}
+          />
+        </Pressable>
       </View>
 
       <View style={styles.gradientContainer}>
@@ -204,6 +217,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "flex-start",
   },
+  rightContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "flex-end",
+  },
   backButton: {
     fontSize: 16,
     color: "#000",
@@ -217,9 +235,11 @@ const styles = StyleSheet.create({
     flex: 2,
     textAlign: "center",
   },
-  rightContainer: {
-    flex: 1,
+  addTransactionImage: {
+    width: 30,
+    height: 30,
   },
+
   goBackImage: {
     width: 30,
     height: 30,

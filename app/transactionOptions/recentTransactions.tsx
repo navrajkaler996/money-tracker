@@ -1,8 +1,3 @@
-import { useGetAccountsQuery } from "@/services/accountApi";
-import { useGetCategoriesByUserIdQuery } from "@/services/categoryApi";
-import { useGetTransactionsByUserIdQuery } from "@/services/transactionApi";
-import { COLORS, MONTHS } from "@/utils/constants";
-import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useState } from "react";
 import {
   Dimensions,
@@ -13,11 +8,21 @@ import {
   Text,
   View,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+
+import { useGetAccountsQuery } from "@/services/accountApi";
+import { useGetCategoriesByUserIdQuery } from "@/services/categoryApi";
+import { useGetTransactionsByUserIdQuery } from "@/services/transactionApi";
+
+import { COLORS, MONTHS } from "@/utils/constants";
+import { useNavigation } from "expo-router";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
 const RecentTransactions = () => {
+  const navigation = useNavigation();
+
   const {
     data: transactionsData,
     isLoading: transactionIsLoading,
@@ -94,7 +99,17 @@ const RecentTransactions = () => {
 
         <Text style={styles.headerText}>Recent Transactions</Text>
 
-        <View style={styles.rightContainer}></View>
+        <Pressable
+          style={styles.rightContainer}
+          onPress={() => {
+            navigation.navigate("transactionOptions/addTransaction");
+          }}>
+          <Image
+            style={[styles.addTransactionImage]}
+            source={require("../../assets/images/icons/add-transaction.png")}
+            // style={styles.goBackImage}
+          />
+        </Pressable>
       </View>
 
       <View style={styles.gradientContainer}>
@@ -204,8 +219,14 @@ const styles = StyleSheet.create({
   },
   rightContainer: {
     flex: 1,
+    justifyContent: "center",
+    alignItems: "flex-end",
   },
   goBackImage: {
+    width: 30,
+    height: 30,
+  },
+  addTransactionImage: {
     width: 30,
     height: 30,
   },
