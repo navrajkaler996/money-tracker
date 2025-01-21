@@ -33,7 +33,23 @@ export default function TabLayout() {
           title: "Transactions",
           tabBarIcon: ({ focused, color, size }) => (
             <Image
-              source={require("../../assets/images/icons/setting.png")}
+              source={require("../../assets/images/icons/transaction.png")}
+              style={{
+                width: size,
+                height: size,
+                tintColor: focused ? color : "gray",
+              }}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="accounts"
+        options={{
+          title: "Accounts",
+          tabBarIcon: ({ focused, color, size }) => (
+            <Image
+              source={require("../../assets/images/icons/bank.png")}
               style={{
                 width: size,
                 height: size,
