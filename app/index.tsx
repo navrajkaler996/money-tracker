@@ -1,6 +1,6 @@
 import { COLORS } from "@/utils/constants";
 import { LinearGradient } from "expo-linear-gradient";
-import { Redirect } from "expo-router";
+import { Redirect, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import {
   Button,
@@ -17,6 +17,7 @@ const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
 function WelcomeScreen({ navigation }: any) {
+  const { message, status } = useLocalSearchParams();
   const [form, setForm] = useState({
     email: "",
     password: "",

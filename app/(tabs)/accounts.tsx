@@ -1,7 +1,15 @@
-import { useGetAccountsQuery } from "@/services/accountApi";
+import {
+  useGetAccountsQuery,
+  useInsertAccountsMutation,
+} from "@/services/accountApi";
 import { COLORS, STYLES } from "@/utils/constants";
 import { LinearGradient } from "expo-linear-gradient";
-import { useNavigation } from "expo-router";
+import {
+  useFocusEffect,
+  useLocalSearchParams,
+  useNavigation,
+  useRouter,
+} from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Dimensions,
@@ -9,19 +17,24 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
 const AccountsScreen = () => {
-  const navigation = useNavigation();
+  const router = useRouter();
+
+  const { message, status } = useLocalSearchParams();
 
   const {
     data: accountsData,
     isLoading: accountsIsLoading,
     error: accountsError,
+    refetch: accountsRefetch,
   } = useGetAccountsQuery(59);
 
   const [debitAccounts, setDebitAccounts] = useState([]);
@@ -45,6 +58,39 @@ const AccountsScreen = () => {
       setCashAccount(cash);
     }
   }, [accountsData]);
+
+  useFocusEffect(() => {
+    accountsRefetch();
+  });
+
+  //Showing toast notification when transaction is added
+  useEffect(() => {
+    if (status === "success") {
+      Toast.show({
+        type: "success",
+        text1: message.toString(),
+        position: "bottom",
+        visibilityTime: 3000,
+        bottomOffset: 100,
+      });
+    } else if (status === "failed") {
+      Toast.show({
+        type: "success",
+        text1: message.toString(),
+        position: "bottom",
+        visibilityTime: 3000,
+        bottomOffset: 100,
+      });
+    }
+  }, [message, status]);
+
+  //Functions
+
+  const handleAddAccount = () => {
+    router.push({
+      pathname: "/accountOptions/addAccount",
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -71,9 +117,14 @@ const AccountsScreen = () => {
         <View style={styles.accountTypeContainer}>
           <Text style={styles.accountType}>Debit accounts</Text>
         </View>
-        {debitAccounts?.map((account: any) => {
+        {debitAccounts?.map((account: any, i: number) => {
           return (
-            <View style={styles.account}>
+            <View
+              style={
+                i !== debitAccounts?.length - 1
+                  ? styles.account
+                  : [styles.account, { marginBottom: 0 }]
+              }>
               <View style={styles.logoContainer}>
                 <Image
                   style={styles.bankLogo}
@@ -96,9 +147,14 @@ const AccountsScreen = () => {
         <View style={styles.accountTypeContainer}>
           <Text style={styles.accountType}>Credit accounts</Text>
         </View>
-        {creditAccounts?.map((account: any) => {
+        {creditAccounts?.map((account: any, i: number) => {
           return (
-            <View style={styles.account}>
+            <View
+              style={
+                i !== creditAccounts?.length - 1
+                  ? styles.account
+                  : [styles.account, { marginBottom: 0 }]
+              }>
               <View style={styles.logoContainer}>
                 <Image
                   style={styles.bankLogo}
@@ -123,9 +179,14 @@ const AccountsScreen = () => {
         <View style={styles.accountTypeContainer}>
           <Text style={styles.accountType}>Cash account</Text>
         </View>
-        {cashAccount?.map((account: any) => {
+        {cashAccount?.map((account: any, i: number) => {
           return (
-            <View style={styles.account}>
+            <View
+              style={
+                i !== cashAccount?.length - 1
+                  ? styles.account
+                  : [styles.account, { marginBottom: 0 }]
+              }>
               <View style={styles.logoContainer}>
                 <Image
                   style={styles.bankLogo}
@@ -143,6 +204,14 @@ const AccountsScreen = () => {
           );
         })}
       </View>
+      <TouchableOpacity
+        style={[styles.addAccount, STYLES.SHADOW_1]}
+        onPress={handleAddAccount}>
+        <Image
+          source={require("../../assets/images/icons/add-icon.png")}
+          style={styles.addAccountIcon}
+        />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -198,9 +267,9 @@ const styles = StyleSheet.create({
   account: {
     width: windowWidth * 0.9,
     height: 70,
-    borderBottomColor: COLORS["primary-3"],
+    borderBottomColor: "#DDD",
     borderBottomWidth: 1,
-    // marginBottom: 40,
+    marginBottom: 20,
     flexDirection: "row",
   },
   logoContainer: {
@@ -249,6 +318,21 @@ const styles = StyleSheet.create({
     color: COLORS.income,
     fontSize: 14,
     textAlign: "right",
+  },
+  addAccount: {
+    position: "absolute",
+    width: 80,
+    height: 80,
+    borderRadius: 100,
+    backgroundColor: COLORS["primary-3"],
+    bottom: 20,
+    right: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  addAccountIcon: {
+    width: 30,
+    height: 30,
   },
 });
 
