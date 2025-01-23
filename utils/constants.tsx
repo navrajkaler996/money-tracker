@@ -36,6 +36,10 @@ export const ERRORS = {
   NOT_EMPTY: "Should not be empty",
 };
 
+//Functions
+
+export const getMonth = (month: string) => MONTHS[Number(month)];
+
 //CSS
 
 export const STYLES = {

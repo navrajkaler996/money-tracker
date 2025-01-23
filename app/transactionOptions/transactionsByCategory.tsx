@@ -15,13 +15,14 @@ import { useGetCategoriesByUserIdQuery } from "@/services/categoryApi";
 import { useGetTransactionsByCategoryIdQuery } from "@/services/transactionApi";
 
 import { COLORS, MONTHS } from "@/utils/constants";
-import { useLocalSearchParams, useNavigation } from "expo-router";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import TransactionsFlatList from "@/components/TransactionsFlatList";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
 const TransactionsByCategory = () => {
-  const navigation = useNavigation();
+  const router = useRouter();
   const { categoryId } = useLocalSearchParams();
 
   const [transaction, setTransaction] = useState([]);
@@ -111,7 +112,7 @@ const TransactionsByCategory = () => {
         <Pressable
           style={styles.rightContainer}
           onPress={() => {
-            navigation.navigate("transactionOptions/addTransaction");
+            router.push({ pathname: "/transactionOptions/addTransaction" });
           }}>
           <Image
             style={[styles.addTransactionImage]}
@@ -121,70 +122,35 @@ const TransactionsByCategory = () => {
       </View>
 
       <View style={styles.gradientContainer}>
-        <View style={styles.accountContainter}>
-          <Text style={styles.textHeading}>Select a category</Text>
-          <View style={styles.categoryCapsuleContainer}>
-            {selectedCategory !== null &&
-              categoriesData.map((category: any, index: number) => (
-                <Pressable
-                  key={index}
-                  style={
-                    category.id === selectedCategory ||
-                    category.id === categoryId
-                      ? styles.categoryCapsuleActive
-                      : styles.categoryCapsule
-                  }
-                  onPress={() => handleCategory(category)}>
-                  <Text style={styles.categoryCapsuleText}>
-                    {category.category_name}
-                  </Text>
-                </Pressable>
-              ))}
+        <LinearGradient colors={["#a8ff78", "#78ffd6"]} style={styles.gradient}>
+          <View style={styles.accountContainter}>
+            <Text style={styles.textHeading}>Select a category</Text>
+            <View style={styles.categoryCapsuleContainer}>
+              {selectedCategory !== null &&
+                categoriesData.map((category: any, index: number) => (
+                  <Pressable
+                    key={index}
+                    style={
+                      category.id === selectedCategory ||
+                      category.id === categoryId
+                        ? styles.categoryCapsuleActive
+                        : styles.categoryCapsule
+                    }
+                    onPress={() => handleCategory(category)}>
+                    <Text style={styles.categoryCapsuleText}>
+                      {category.category_name}
+                    </Text>
+                  </Pressable>
+                ))}
+            </View>
           </View>
-        </View>
+        </LinearGradient>
       </View>
 
       {!transactionIsLoading && transaction?.length > 0 && (
         <View style={styles.transactionListContainer}>
           <View style={styles.transactionGradientContainer}>
-            <FlatList
-              data={transaction}
-              renderItem={({ item }: any) => {
-                return (
-                  <LinearGradient
-                    colors={["#fff", "#fff"]}
-                    style={styles.transactionItem}>
-                    <View style={styles.day}>
-                      <Text style={styles.textNumbers}>
-                        {item.transactionDay}
-                      </Text>
-                      <Text style={{ ...styles.textHeading, fontSize: 16 }}>
-                        {getMonth(item.transactionMonth)}
-                      </Text>
-                    </View>
-                    <View style={styles.transactionInfo}>
-                      <Text style={styles.categoryText}>
-                        {item.categoryName}
-                      </Text>
-                      {/* <Text style={styles.amountText}>
-                        -${item.transactionAmount}
-                      </Text> */}
-                      <Text style={styles.accountNameText}>
-                        {item.accountType !== "cash"
-                          ? `${item.bankName} - ${item.accountType}`
-                          : item.accountType}
-                      </Text>
-                      <Text style={styles.accountNumberText}>
-                        {item.description}
-                      </Text>
-                      <Text style={styles.amountText}>
-                        -${item.transactionAmount}
-                      </Text>
-                    </View>
-                  </LinearGradient>
-                );
-              }}
-            />
+            <TransactionsFlatList data={transaction} />
           </View>
         </View>
       )}

@@ -4,6 +4,7 @@ import {
   FlatList,
   Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -16,6 +17,7 @@ import { useGetTransactionsByUserIdQuery } from "@/services/transactionApi";
 
 import { COLORS, MONTHS } from "@/utils/constants";
 import { useNavigation } from "expo-router";
+import TransactionsFlatList from "@/components/TransactionsFlatList";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
@@ -132,48 +134,11 @@ const RecentTransactions = () => {
       </View>
 
       {!transactionIsLoading && transaction?.length > 0 && (
-        <View style={styles.transactionListContainer}>
+        <ScrollView contentContainerStyle={styles.transactionListContainer}>
           <View style={styles.transactionGradientContainer}>
-            <FlatList
-              data={transaction}
-              renderItem={({ item }: any) => {
-                return (
-                  <LinearGradient
-                    colors={["#fff", "#fff"]}
-                    style={styles.transactionItem}>
-                    <View style={styles.day}>
-                      <Text style={styles.textNumbers}>
-                        {item.transactionDay}
-                      </Text>
-                      <Text style={{ ...styles.textHeading, fontSize: 16 }}>
-                        {getMonth(item.transactionMonth)}
-                      </Text>
-                    </View>
-                    <View style={styles.transactionInfo}>
-                      <Text style={styles.categoryText}>
-                        {item.categoryName}
-                      </Text>
-                      {/* <Text style={styles.amountText}>
-                        -${item.transactionAmount}
-                      </Text> */}
-                      <Text style={styles.accountNameText}>
-                        {item.accountType !== "cash"
-                          ? `${item.bankName} - ${item.accountType}`
-                          : item.accountType}
-                      </Text>
-                      <Text style={styles.accountNumberText}>
-                        {item.description}
-                      </Text>
-                      <Text style={styles.amountText}>
-                        -${item.transactionAmount}
-                      </Text>
-                    </View>
-                  </LinearGradient>
-                );
-              }}
-            />
+            <TransactionsFlatList data={transaction} />
           </View>
-        </View>
+        </ScrollView>
       )}
     </View>
   );
@@ -287,29 +252,25 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   transactionItem: {
-    width: windowWidth,
-    minHeight: 100,
+    width: windowWidth * 0.9,
+    minHeight: 70,
     flexDirection: "row",
     marginBottom: 30,
+    borderBottomColor: "#ddd",
+    borderBottomWidth: 1,
   },
   day: {
     flex: 1.5,
-    justifyContent: "center",
+    // justifyContent: "center",
     alignItems: "center",
-    borderRightColor: "#ddd",
-    borderRightWidth: 1,
-    backgroundColor: COLORS["primary-1"],
+    // borderRightColor: "#ddd",
+    // borderRightWidth: 1,
   },
   transactionInfo: {
     flex: 7,
     gap: 5,
     paddingLeft: 10,
     justifyContent: "center",
-    // backgroundColor: "#ddd",
-    // borderTopColor: "#ddd",
-    // borderTopWidth: 1,
-    // borderBottomColor: "#ddd",
-    // borderBottomWidth: 1,
   },
   categoryText: {
     fontFamily: "Aller_Bd",
