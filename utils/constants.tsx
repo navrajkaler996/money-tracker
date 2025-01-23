@@ -8,6 +8,7 @@ export const COLORS = {
   "calender-color-1": "#d9ffc3",
   income: "#4CAF50",
   expense: "#F44336",
+  error: "#FF4D4D",
 };
 
 export const ACCOUNT_TYPES = [
@@ -30,6 +31,10 @@ export const MONTHS = [
   "nov",
   "dec",
 ];
+
+export const ERRORS = {
+  NOT_EMPTY: "Should not be empty",
+};
 
 //CSS
 

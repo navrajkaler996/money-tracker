@@ -15,6 +15,7 @@ import {
   Dimensions,
   Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -112,98 +113,103 @@ const AccountsScreen = () => {
           </View>
         </LinearGradient>
       </View>
-
-      <View style={styles.accountContainer}>
-        <View style={styles.accountTypeContainer}>
-          <Text style={styles.accountType}>Debit accounts</Text>
-        </View>
-        {debitAccounts?.map((account: any, i: number) => {
-          return (
-            <View
-              style={
-                i !== debitAccounts?.length - 1
-                  ? styles.account
-                  : [styles.account, { marginBottom: 0 }]
-              }>
-              <View style={styles.logoContainer}>
-                <Image
-                  style={styles.bankLogo}
-                  source={require("../../assets/images/icons/cibc.png")}
-                />
-              </View>
-              <View style={styles.infoContainer}>
-                <Text style={styles.bankName}>{account.bank_name}</Text>
-                <Text style={styles.totalAmount}>${account.total_amount}</Text>
-                <View style={styles.amountContainer}>
-                  <Text style={styles.income}>+$1700</Text>
-                  <Text style={styles.expense}>-$978</Text>
+      <ScrollView>
+        <View style={styles.accountContainer}>
+          <View style={styles.accountTypeContainer}>
+            <Text style={styles.accountType}>Debit accounts</Text>
+          </View>
+          {debitAccounts?.map((account: any, i: number) => {
+            return (
+              <View
+                style={
+                  i !== debitAccounts?.length - 1
+                    ? styles.account
+                    : [styles.account, { marginBottom: 0 }]
+                }>
+                <View style={styles.logoContainer}>
+                  <Image
+                    style={styles.bankLogo}
+                    source={require("../../assets/images/icons/cibc.png")}
+                  />
+                </View>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.bankName}>{account.bank_name}</Text>
+                  <Text style={styles.totalAmount}>
+                    ${account.total_amount}
+                  </Text>
+                  <View style={styles.amountContainer}>
+                    <Text style={styles.income}>+$1700</Text>
+                    <Text style={styles.expense}>-$978</Text>
+                  </View>
                 </View>
               </View>
-            </View>
-          );
-        })}
-      </View>
-      <View style={styles.accountContainer}>
-        <View style={styles.accountTypeContainer}>
-          <Text style={styles.accountType}>Credit accounts</Text>
+            );
+          })}
         </View>
-        {creditAccounts?.map((account: any, i: number) => {
-          return (
-            <View
-              style={
-                i !== creditAccounts?.length - 1
-                  ? styles.account
-                  : [styles.account, { marginBottom: 0 }]
-              }>
-              <View style={styles.logoContainer}>
-                <Image
-                  style={styles.bankLogo}
-                  source={require("../../assets/images/icons/cibc.png")}
-                />
-              </View>
-              <View style={styles.infoContainer}>
-                <Text style={styles.bankName}>{account.bank_name}</Text>
-                <Text style={styles.totalAmount}>
-                  ${account.available_credit}
-                </Text>
-                <View style={styles.amountContainer}>
-                  <Text style={styles.income}>+$1700</Text>
-                  <Text style={styles.expense}>-$978</Text>
+        <View style={styles.accountContainer}>
+          <View style={styles.accountTypeContainer}>
+            <Text style={styles.accountType}>Credit accounts</Text>
+          </View>
+          {creditAccounts?.map((account: any, i: number) => {
+            return (
+              <View
+                style={
+                  i !== creditAccounts?.length - 1
+                    ? styles.account
+                    : [styles.account, { marginBottom: 0 }]
+                }>
+                <View style={styles.logoContainer}>
+                  <Image
+                    style={styles.bankLogo}
+                    source={require("../../assets/images/icons/cibc.png")}
+                  />
+                </View>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.bankName}>{account.bank_name}</Text>
+                  <Text style={styles.totalAmount}>
+                    ${account.available_credit}
+                  </Text>
+                  <View style={styles.amountContainer}>
+                    <Text style={styles.income}>+$1700</Text>
+                    <Text style={styles.expense}>-$978</Text>
+                  </View>
                 </View>
               </View>
-            </View>
-          );
-        })}
-      </View>
-      <View style={styles.accountContainer}>
-        <View style={styles.accountTypeContainer}>
-          <Text style={styles.accountType}>Cash account</Text>
+            );
+          })}
         </View>
-        {cashAccount?.map((account: any, i: number) => {
-          return (
-            <View
-              style={
-                i !== cashAccount?.length - 1
-                  ? styles.account
-                  : [styles.account, { marginBottom: 0 }]
-              }>
-              <View style={styles.logoContainer}>
-                <Image
-                  style={styles.bankLogo}
-                  source={require("../../assets/images/icons/cibc.png")}
-                />
-              </View>
-              <View style={styles.infoContainer}>
-                <Text style={styles.totalAmount}>${account.total_amount}</Text>
-                <View style={styles.amountContainer}>
-                  <Text style={styles.income}>+$1700</Text>
-                  <Text style={styles.expense}>-$978</Text>
+        <View style={styles.accountContainer}>
+          <View style={styles.accountTypeContainer}>
+            <Text style={styles.accountType}>Cash account</Text>
+          </View>
+          {cashAccount?.map((account: any, i: number) => {
+            return (
+              <View
+                style={
+                  i !== cashAccount?.length - 1
+                    ? styles.account
+                    : [styles.account, { marginBottom: 0 }]
+                }>
+                <View style={styles.logoContainer}>
+                  <Image
+                    style={styles.bankLogo}
+                    source={require("../../assets/images/icons/cibc.png")}
+                  />
+                </View>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.totalAmount}>
+                    ${account.total_amount}
+                  </Text>
+                  <View style={styles.amountContainer}>
+                    <Text style={styles.income}>+$1700</Text>
+                    <Text style={styles.expense}>-$978</Text>
+                  </View>
                 </View>
               </View>
-            </View>
-          );
-        })}
-      </View>
+            );
+          })}
+        </View>
+      </ScrollView>
       <TouchableOpacity
         style={[styles.addAccount, STYLES.SHADOW_1]}
         onPress={handleAddAccount}>

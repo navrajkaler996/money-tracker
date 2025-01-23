@@ -12,10 +12,10 @@ import {
 
 import Input from "@/components/Input";
 
-import { COLORS } from "@/utils/constants";
+import { COLORS, ERRORS } from "@/utils/constants";
 import RadioGroup from "@/components/RadioGroup";
 import Dropdown from "@/components/Dropdown";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "@/components/Button";
 import { useInsertAccountsMutation } from "@/services/accountApi";
 import { useNavigation, useRouter } from "expo-router";
@@ -40,10 +40,16 @@ const addAccount = () => {
   ] = useInsertAccountsMutation();
 
   const [selectedAccountType, setSelectedAccountType] = useState("debit");
-  const [selectedBankName, setSelectedBankName] = useState(null);
+  const [selectedBankName, setSelectedBankName] = useState("");
   const [totalAmount, setTotalAmount] = useState(0);
   const [availableCredit, setAvailableCredit] = useState(0);
   const [creditLimit, setCreditLimit] = useState(0);
+  const [errors, setErrors] = useState({
+    bankName: null,
+    totalAmount: null,
+    availableCredit: null,
+    creditLimit: null,
+  });
 
   useEffect(() => {
     if (!insertAccountsIsLoading && insertAccountsData) {
@@ -58,25 +64,55 @@ const addAccount = () => {
   }, [insertAccountsData]);
 
   const handleAddAccount = () => {
-    console.log("aaaa", selectedAccountType, selectedBankName);
-    if (
-      selectedAccountType === "debit" &&
-      selectedBankName !== null &&
-      totalAmount >= 0
-    ) {
-      const payload = [
-        {
-          account_type: "debit",
-          available_credit: null,
-          bank_name: selectedBankName,
-          credit_limit: null,
-          total_amount: Number(totalAmount),
-        },
-      ];
+    let isValid = true;
+    const newErrors: any = {};
 
-      insertAccounts({ userId: 59, payload });
-    } else if (selectedAccountType === "cash" && totalAmount >= 0) {
-      const payload = [
+    // Validation for bankName and creditLimit
+    if (selectedBankName?.length === 0) {
+      newErrors.bankName = ERRORS.NOT_EMPTY;
+      isValid = false;
+    }
+
+    if (selectedAccountType === "credit" && creditLimit === 0) {
+      newErrors.creditLimit = ERRORS.NOT_EMPTY;
+      isValid = false;
+    }
+
+    // Validation for totalAmount (ensure it's non-negative)
+    if (
+      (selectedAccountType === "debit" || selectedAccountType === "cash") &&
+      totalAmount < 0
+    ) {
+      newErrors.totalAmount = ERRORS.NOT_EMPTY;
+      isValid = false;
+    }
+
+    // Set errors if any
+    if (!isValid) {
+      setErrors(newErrors);
+      return;
+    }
+
+    let payload: any = [];
+
+    // Add debit account
+    if (selectedAccountType === "debit") {
+      if (selectedBankName?.length > 0 && totalAmount >= 0) {
+        payload = [
+          {
+            account_type: "debit",
+            available_credit: null,
+            bank_name: selectedBankName,
+            credit_limit: null,
+            total_amount: Number(totalAmount),
+          },
+        ];
+      }
+    }
+
+    // Add cash account
+    else if (selectedAccountType === "cash" && totalAmount >= 0) {
+      payload = [
         {
           account_type: "cash",
           available_credit: null,
@@ -85,23 +121,22 @@ const addAccount = () => {
           total_amount: totalAmount,
         },
       ];
-      insertAccounts({ userId: 59, payload });
-    } else if (
-      selectedAccountType === "debit" &&
-      selectedBankName !== null &&
-      creditLimit >= 0
-    ) {
-      const payload = [
+    }
+
+    // Add credit account
+    else if (selectedAccountType === "credit" && creditLimit >= 0) {
+      payload = [
         {
           account_type: "credit",
-          available_credit: availableCredit,
+          available_credit: Number(availableCredit),
           bank_name: selectedBankName,
-          credit_limit: creditLimit,
+          credit_limit: Number(creditLimit),
           total_amount: null,
         },
       ];
-      insertAccounts({ userId: 59, payload });
     }
+
+    insertAccounts({ userId: 59, payload });
   };
 
   return (
@@ -144,6 +179,8 @@ const addAccount = () => {
                 placeholder={"Enter bank name..."}
                 numeric={false}
                 onChangeText={setSelectedBankName}
+                error={errors.bankName}
+                value={selectedBankName}
               />
             )}
             {(selectedAccountType === "debit" ||
@@ -153,6 +190,8 @@ const addAccount = () => {
                 placeholder={"Enter total amount..."}
                 numeric={true}
                 onChangeText={setTotalAmount}
+                value={totalAmount}
+                error={undefined}
               />
             )}
             {selectedAccountType === "credit" && (
@@ -161,6 +200,8 @@ const addAccount = () => {
                 placeholder={"Enter available credit"}
                 numeric={true}
                 onChangeText={setAvailableCredit}
+                value={availableCredit}
+                error={undefined}
               />
             )}
             {selectedAccountType === "credit" && (
@@ -169,6 +210,8 @@ const addAccount = () => {
                 placeholder={"Enter credit limit"}
                 numeric={true}
                 onChangeText={setCreditLimit}
+                value={creditLimit}
+                error={undefined}
               />
             )}
             <Button
