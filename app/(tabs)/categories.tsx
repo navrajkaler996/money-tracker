@@ -1,3 +1,4 @@
+import CircularButton from "@/components/CircularButton";
 import { useGetAccountsQuery } from "@/services/accountApi";
 import {
   useGetCategoriesByUserIdQuery,
@@ -6,17 +7,29 @@ import {
 import { useGetTransactionsByUserIdQuery } from "@/services/transactionApi";
 import { COLORS, STYLES } from "@/utils/constants";
 import { LinearGradient } from "expo-linear-gradient";
+import {
+  useFocusEffect,
+  useLocalSearchParams,
+  useNavigation,
+  useRouter,
+} from "expo-router";
 import { useEffect, useState } from "react";
 import { Dimensions, Image, StyleSheet, Text, View } from "react-native";
+import Toast from "react-native-toast-message";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
 const CategoriesScreen = () => {
+  const router = useRouter();
+
+  const { message, status } = useLocalSearchParams();
+
   const {
     data: categoriesData,
     isLoading: categoriesIsLoading,
     error: categoriesError,
+    refetch: categoriesRefetch,
   } = useGetCategoriesByUserIdQuery(59);
 
   const {
@@ -36,6 +49,10 @@ const CategoriesScreen = () => {
   });
 
   const [categories, setCategories] = useState([]);
+
+  useFocusEffect(() => {
+    categoriesRefetch();
+  });
 
   useEffect(() => {
     if (categoriesData && transactionsData) {
@@ -61,26 +78,37 @@ const CategoriesScreen = () => {
     }
   }, [categoriesData, transactionsData]);
 
+  //Showing toast notification when transaction is added
+  useEffect(() => {
+    if (status === "success") {
+      Toast.show({
+        type: "success",
+        text1: message.toString(),
+        position: "bottom",
+        visibilityTime: 3000,
+        bottomOffset: 100,
+      });
+    } else if (status === "failed") {
+      Toast.show({
+        type: "success",
+        text1: message.toString(),
+        position: "bottom",
+        visibilityTime: 3000,
+        bottomOffset: 100,
+      });
+    }
+  }, [message, status]);
+
+  const handleNavigate = () => {
+    console.log("----");
+    router.push({
+      pathname: "/categoryOptions/addCategory",
+    });
+  };
+
   return (
     <View style={styles.container}>
-      <View style={[styles.gradientContainer, STYLES.SHADOW_1]}>
-        {/* <LinearGradient colors={["#a8ff78", "#78ffd6"]} style={styles.gradient}>
-          <View style={styles.accountInfoContainer}>
-            <View style={styles.viewInGradient}>
-              <Text style={styles.textHeading}>Assets</Text>
-              <Text style={styles.textNumbers}>$1000</Text>
-            </View>
-            <View style={styles.viewInGradient}>
-              <Text style={styles.textHeading}>Net worth</Text>
-              <Text style={styles.textNumbers}>$1000</Text>
-            </View>
-            <View style={styles.viewInGradient}>
-              <Text style={styles.textHeading}>Liabilities</Text>
-              <Text style={styles.textNumbers}>$1000</Text>
-            </View>
-          </View>
-        </LinearGradient> */}
-      </View>
+      <View style={[styles.gradientContainer, STYLES.SHADOW_1]}></View>
       <View style={styles.categoryContainer}>
         {categories &&
           categories.map((category: any) => {
@@ -108,6 +136,7 @@ const CategoriesScreen = () => {
             );
           })}
       </View>
+      <CircularButton onPress={handleNavigate} />
     </View>
   );
 };
