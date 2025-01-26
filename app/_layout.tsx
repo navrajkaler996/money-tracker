@@ -45,10 +45,10 @@ export default function AppLayout() {
       <Provider store={store}>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen
+          {/* <Stack.Screen
             name="transactionOptions/transactionList"
             options={{ headerShown: false }}
-          />
+          /> */}
         </Stack>
         {/* <Stack.Screen
           name="transactionOptions/transactionsByCategory"
