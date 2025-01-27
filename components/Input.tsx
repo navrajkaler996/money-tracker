@@ -1,10 +1,35 @@
 import { COLORS } from "@/utils/constants";
-import { Dimensions, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Dimensions,
+  StyleSheet,
+  Text,
+  TextInput,
+  TextStyle,
+  View,
+} from "react-native";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
-const Input = ({ label, placeholder, numeric, onChangeText, error, value }) => {
+interface InputProps {
+  label: string;
+  placeholder: string;
+  numeric?: boolean;
+  onChangeText: (text: string) => void;
+  error?: string | null;
+  value: string;
+  textInputStyles?: TextStyle;
+}
+
+const Input: React.FC<InputProps> = ({
+  label,
+  placeholder,
+  numeric = false,
+  onChangeText,
+  error,
+  value,
+  textInputStyles,
+}) => {
   console.log(value);
   return (
     <View style={styles.container}>
@@ -13,7 +38,7 @@ const Input = ({ label, placeholder, numeric, onChangeText, error, value }) => {
         style={
           error
             ? [styles.textInput, { borderBottomColor: COLORS.error }]
-            : styles.textInput
+            : [styles.textInput, textInputStyles]
         }
         placeholder={placeholder}
         keyboardType={numeric ? "numeric" : "default"}

@@ -34,6 +34,8 @@ export const MONTHS = [
 
 export const ERRORS = {
   NOT_EMPTY: "Should not be empty",
+  INVALID_EMAIL: "Please enter a valid email",
+  SHORT_PASSWORD: "Password should be at least 6 characters long",
 };
 
 //Functions

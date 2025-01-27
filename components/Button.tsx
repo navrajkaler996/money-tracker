@@ -1,20 +1,44 @@
-import { COLORS, STYLES } from "@/utils/constants";
+import React from "react";
 import {
   Dimensions,
-  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
+  ViewStyle,
 } from "react-native";
+
+import { COLORS, STYLES } from "@/utils/constants";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
-const Button = ({ text, buttonStyles, onPress }) => {
+interface ButtonProps {
+  text: string;
+  buttonStyles?: ViewStyle;
+  onPress?: () => void;
+  disabled?: boolean;
+}
+
+const Button: React.FC<ButtonProps> = ({
+  text,
+  buttonStyles = {},
+  onPress,
+  disabled = false,
+}) => {
   return (
     <TouchableOpacity
-      style={[styles.button, STYLES.SHADOW_1, buttonStyles]}
-      onPress={onPress}>
+      style={
+        disabled
+          ? [
+              styles.button,
+              STYLES.SHADOW_1,
+              buttonStyles,
+              { backgroundColor: "#ddd" },
+            ]
+          : [styles.button, STYLES.SHADOW_1, buttonStyles]
+      }
+      onPress={onPress}
+      disabled={disabled}>
       <Text style={styles.buttonText}>{text}</Text>
     </TouchableOpacity>
   );
