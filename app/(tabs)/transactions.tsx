@@ -9,26 +9,29 @@ import {
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useNavigation } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import { Calendar } from "react-native-calendars";
 
 import { useGetTransactionsByUserIdQuery } from "@/services/transactionApi";
 
 import { COLORS, STYLES } from "@/utils/constants";
-import { SHADOW_1 } from "@/utils/styles";
+import { useAuth } from "@/context/AuthContext";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
 function TransactionsScreen() {
-  const navigation = useNavigation();
+  const router = useRouter();
+  const { user, token } = useAuth();
+
+  const [userId, setUserId] = useState<Number>();
 
   const {
     data: transactionsData,
     isLoading: transactionIsLoading,
     refetch: transactionRefect,
   } = useGetTransactionsByUserIdQuery({
-    userId: 59,
+    userId: userId,
     month: 1,
     year: 2025,
   });
@@ -45,15 +48,37 @@ function TransactionsScreen() {
     }
   }, [transactionsData]);
 
+  useEffect(() => {
+    if (user) setUserId(user?.userId);
+  }, [user]);
+
   //FUNCTIONS
 
   //Navigate to different screen
   const handlePress = (value: string) => {
     if (value === "add-transaction") {
-      navigation.navigate("transactionOptions/addTransaction");
+      // navigation.navigate("transactionOptions/addTransaction");
+      router.push({
+        pathname: "/transactionOptions/addTransaction",
+        params: {
+          userId: userId,
+        },
+      });
     } else if (value === "transactions-by-category") {
-      navigation.navigate("transactionOptions/transactionsByCategory");
-    } else navigation.navigate("transactionOptions/recentTransactions");
+      router.push({
+        pathname: "/transactionOptions/transactionsByCategory",
+        params: {
+          userId: userId,
+        },
+      });
+    } else {
+      router.push({
+        pathname: "/transactionOptions/recentTransactions",
+        params: {
+          userId: userId,
+        },
+      });
+    }
   };
 
   //Creating dates with transaction for calender

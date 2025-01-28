@@ -18,7 +18,7 @@ import Dropdown from "@/components/Dropdown";
 import React, { useEffect, useState } from "react";
 import Button from "@/components/Button";
 import { useInsertAccountsMutation } from "@/services/accountApi";
-import { useNavigation, useRouter } from "expo-router";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
@@ -28,6 +28,7 @@ const addAccount = () => {
   const bankNames = [{ value: "RBC", label: "RBC" }];
 
   const router = useRouter();
+  const { userId } = useLocalSearchParams();
 
   //API for inserting accounts
   const [
@@ -136,7 +137,7 @@ const addAccount = () => {
       ];
     }
 
-    insertAccounts({ userId: 59, payload });
+    insertAccounts({ userId: userId, payload });
   };
 
   return (

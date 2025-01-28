@@ -16,33 +16,36 @@ import { useGetCategoriesByUserIdQuery } from "@/services/categoryApi";
 import { useGetTransactionsByUserIdQuery } from "@/services/transactionApi";
 
 import { COLORS, MONTHS } from "@/utils/constants";
-import { useNavigation } from "expo-router";
+import { useLocalSearchParams, useNavigation } from "expo-router";
 import TransactionsFlatList from "@/components/TransactionsFlatList";
+import { useAuth } from "@/context/AuthContext";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
 const RecentTransactions = () => {
   const navigation = useNavigation();
+  const { userId } = useLocalSearchParams();
+  const { user, token } = useAuth();
 
   const {
     data: transactionsData,
     isLoading: transactionIsLoading,
     refetch: transactionRefect,
   } = useGetTransactionsByUserIdQuery({
-    userId: 59,
+    userId: userId,
     month: 1,
     year: 2025,
   });
 
   const { data: categoriesData, isLoading: categoriesIsLoading } =
-    useGetCategoriesByUserIdQuery(59);
+    useGetCategoriesByUserIdQuery(userId);
 
   const {
     data: accountsData,
     isLoading: accountsIsLoading,
     error: accountsError,
-  } = useGetAccountsQuery(59);
+  } = useGetAccountsQuery(userId);
 
   const [transaction, setTransaction] = useState([]);
 

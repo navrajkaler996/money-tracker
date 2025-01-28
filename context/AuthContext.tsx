@@ -19,25 +19,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<any>();
 
   useEffect(() => {
-    const loadToken = async () => {
+    const loadData = async () => {
       const storedToken = await SecureStore.getItemAsync("token");
+      const storedUserId = await SecureStore.getItemAsync("userId");
+      const storedFirstName = await SecureStore.getItemAsync("firstName");
+
       if (storedToken) {
         setToken(storedToken);
+        setUser({
+          userId: Number(storedUserId),
+          firstName: storedFirstName,
+        });
       }
     };
-    loadToken();
+    loadData();
   }, []);
 
   const login = (response: any) => {
     SecureStore.setItemAsync("token", response.access_token);
-    SecureStore.setItemAsync("userId", response?.user?.id);
-    SecureStore.setItemAsync("first_name", response?.user?.first_name);
+
+    SecureStore.setItemAsync("userId", response?.user?.id?.toString());
+    SecureStore.setItemAsync("firstName", response?.user?.first_name);
     SecureStore.setItemAsync("email", response?.user?.email);
 
     setToken(response?.access_token);
     setUser({
       userId: response?.user.id,
-      first_name: response?.user.first_name,
+      firstName: response?.user.first_name,
       email: response?.user.email,
     });
   };

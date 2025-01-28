@@ -3,6 +3,8 @@ import { Animated, Dimensions, StyleSheet, Text, View } from "react-native";
 
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import * as SecureStore from "expo-secure-store";
+import { jwtDecode } from "jwt-decode";
 
 import { useCreateUserMutation } from "@/services/userApi";
 
@@ -11,6 +13,7 @@ import Input from "@/components/Input";
 
 import { useAuth } from "@/context/AuthContext";
 import { COLORS, ERRORS, STYLES } from "@/utils/constants";
+import { checkToken } from "@/utils/helpers";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
@@ -40,6 +43,24 @@ function WelcomeScreen() {
   const [heightAnim] = useState(new Animated.Value(0));
 
   //USEEFFECTS
+
+  useEffect(() => {
+    const handleCheckToken = async () => {
+      const isValid = await checkToken();
+      if (isValid) {
+        router.push({
+          pathname: "/(tabs)",
+        });
+      } else {
+        SecureStore.deleteItemAsync("token");
+        SecureStore.deleteItemAsync("userId");
+        SecureStore.deleteItemAsync("email");
+
+        console.log("Token is expired or not found");
+      }
+    };
+    handleCheckToken();
+  }, []);
 
   //useEffect to store token in context
   /////and navigate to newUser screen

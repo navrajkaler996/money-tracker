@@ -11,6 +11,7 @@ import {
 
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import * as SecureStore from "expo-secure-store";
 
 //Components
 import SettingOne from "./settingOne";
@@ -19,7 +20,6 @@ import SettingTwo from "./settingTwo";
 import { useAuth } from "@/context/AuthContext";
 import { COLORS } from "@/utils/constants";
 import { useInsertAccountsMutation } from "@/services/accountApi";
-import { useCreateUserMutation } from "@/services/userApi";
 import { useInsertCategoriesMutation } from "@/services/categoryApi";
 
 const windowHeight = Dimensions.get("window").height;
@@ -32,6 +32,7 @@ function NewUserScreen() {
 
   const [setting, setSetting] = useState(1);
   const [activeAccount, setActiveAccount] = useState("accounts");
+  const [token, setToken] = useState("");
   // State for categories
   const [categories, setCategories] = useState([
     "Grocery",
@@ -85,6 +86,16 @@ function NewUserScreen() {
     insertCategoriesError,
     insertCategoriesIsLoading,
   ]);
+
+  useEffect(() => {
+    const loadToken = async () => {
+      const storedToken = await SecureStore.getItemAsync("token");
+      if (storedToken) {
+        setToken(storedToken);
+      }
+    };
+    loadToken();
+  }, []);
 
   //Creating payload for insert accounts API
   const createAccountsPayload = (accounts: any) => {

@@ -23,25 +23,25 @@ const windowWidth = Dimensions.get("window").width;
 
 const TransactionsByCategory = () => {
   const router = useRouter();
-  const { categoryId } = useLocalSearchParams();
+  const { categoryId, userId } = useLocalSearchParams();
 
   const [transaction, setTransaction] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState<Number | null>(null);
 
   const { data: transactionsData, isLoading: transactionIsLoading } =
     useGetTransactionsByCategoryIdQuery({
-      userId: 59,
+      userId: userId,
       categoryId: selectedCategory,
     });
 
   const { data: categoriesData, isLoading: categoriesIsLoading } =
-    useGetCategoriesByUserIdQuery(59);
+    useGetCategoriesByUserIdQuery(userId);
 
   const {
     data: accountsData,
     isLoading: accountsIsLoading,
     error: accountsError,
-  } = useGetAccountsQuery(59);
+  } = useGetAccountsQuery(userId);
 
   const createTransaction = (
     transactionsData: any,
@@ -127,7 +127,7 @@ const TransactionsByCategory = () => {
             <Text style={styles.textHeading}>Select a category</Text>
             <View style={styles.categoryCapsuleContainer}>
               {selectedCategory !== null &&
-                categoriesData.map((category: any, index: number) => (
+                categoriesData?.map((category: any, index: number) => (
                   <Pressable
                     key={index}
                     style={

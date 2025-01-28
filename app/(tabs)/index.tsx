@@ -9,6 +9,7 @@ import {
 
 import { LinearGradient } from "expo-linear-gradient";
 import Toast from "react-native-toast-message";
+import * as SecureStore from "expo-secure-store";
 
 import { useGetTransactionsByUserIdQuery } from "@/services/transactionApi";
 import { useGetCategoriesByUserIdQuery } from "@/services/categoryApi";
@@ -33,7 +34,9 @@ function HomeScreen() {
 
   const { message, status } = useLocalSearchParams();
 
-  const user = { userId: 59 };
+  const { user, token } = useAuth();
+
+  const [userId, setUserId] = useState<Number>();
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [ledger, setLedger] = useState([]);
   const [calculatedAccounts, setCalculatedAccounts] =
@@ -48,18 +51,18 @@ function HomeScreen() {
     isLoading: transactionIsLoading,
     refetch: transactionRefect,
   } = useGetTransactionsByUserIdQuery({
-    userId: 59,
+    userId: userId,
     month: 1,
     year: 2025,
   });
   const { data: categoriesData, isLoading: categoriesIsLoading } =
-    useGetCategoriesByUserIdQuery(59);
+    useGetCategoriesByUserIdQuery(userId);
 
   const {
     data: accountsData,
     isLoading: accountsIsLoading,
     error: accountsError,
-  } = useGetAccountsQuery(user.userId);
+  } = useGetAccountsQuery(userId);
 
   //Using useFocusEffect hook to call transactionRefect()
   /////This will update the transaction data
@@ -160,6 +163,10 @@ function HomeScreen() {
     }
   }, [message, status]);
 
+  useEffect(() => {
+    if (user) setUserId(user?.userId);
+  }, [user]);
+
   const calculateTransactionsByCategory = (
     categoriesData: any,
     transactionsData: any
@@ -180,11 +187,12 @@ function HomeScreen() {
     setLedger(transactionsByCategory);
   };
 
-  const handleCategory = (categoryId) => {
+  const handleCategory = (categoryId: any) => {
     router.push({
-      pathname: "transactionOptions/transactionsByCategory",
+      pathname: "/transactionOptions/transactionsByCategory",
       params: {
         categoryId,
+        userId,
       },
     });
   };

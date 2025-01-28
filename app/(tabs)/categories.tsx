@@ -100,7 +100,6 @@ const CategoriesScreen = () => {
   }, [message, status]);
 
   const handleNavigate = () => {
-    console.log("----");
     router.push({
       pathname: "/categoryOptions/addCategory",
     });

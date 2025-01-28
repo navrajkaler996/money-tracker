@@ -1,3 +1,4 @@
+import { useAuth } from "@/context/AuthContext";
 import {
   useGetAccountsQuery,
   useInsertAccountsMutation,
@@ -28,7 +29,8 @@ const windowWidth = Dimensions.get("window").width;
 
 const AccountsScreen = () => {
   const router = useRouter();
-
+  const { user } = useAuth();
+  const [userId, setUserId] = useState();
   const { message, status } = useLocalSearchParams();
 
   const {
@@ -36,7 +38,7 @@ const AccountsScreen = () => {
     isLoading: accountsIsLoading,
     error: accountsError,
     refetch: accountsRefetch,
-  } = useGetAccountsQuery(59);
+  } = useGetAccountsQuery(userId);
 
   const [debitAccounts, setDebitAccounts] = useState([]);
   const [creditAccounts, setCreditAccounts] = useState([]);
@@ -85,11 +87,18 @@ const AccountsScreen = () => {
     }
   }, [message, status]);
 
+  useEffect(() => {
+    if (user) setUserId(user?.userId);
+  }, [user]);
+
   //Functions
 
   const handleAddAccount = () => {
     router.push({
       pathname: "/accountOptions/addAccount",
+      params: {
+        userId,
+      },
     });
   };
 

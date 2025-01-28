@@ -13,7 +13,7 @@ import {
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { Dropdown } from "react-native-element-dropdown";
 
 import { useGetAccountsQuery } from "@/services/accountApi";
@@ -30,8 +30,7 @@ const windowWidth = Dimensions.get("window").width;
 //Component to add a transaction
 const addTransaction = () => {
   const router = useRouter();
-
-  const userId = 59;
+  const { userId } = useLocalSearchParams();
 
   //Fetching accounts using userId API
   const {

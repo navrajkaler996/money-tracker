@@ -30,7 +30,6 @@ const Input: React.FC<InputProps> = ({
   value,
   textInputStyles,
 }) => {
-  console.log(value);
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
