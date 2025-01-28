@@ -69,7 +69,10 @@ const addAccount = () => {
     const newErrors: any = {};
 
     // Validation for bankName and creditLimit
-    if (selectedBankName?.length === 0) {
+    if (
+      (selectedAccountType === "credit" || selectedAccountType === "debit") &&
+      selectedBankName?.length === 0
+    ) {
       newErrors.bankName = ERRORS.NOT_EMPTY;
       isValid = false;
     }
