@@ -7,8 +7,20 @@ export const transactionApi = createApi({
   }),
   endpoints: (builder) => ({
     getTransactionsByUserId: builder.query({
-      query: ({ userId, month, year }) =>
-        `${userId}?month=${month}&year=${year}`,
+      query: ({ userId, month, year, date }) => {
+        let url = `${userId}?`;
+        console.log(year, month);
+        if (month && year) {
+          url += `month=${month}&year=${year}`;
+        }
+
+        if (date) {
+          if (url.includes("?")) url += `&date=${date}`;
+          else url += `date=${date}`;
+        }
+
+        return url;
+      },
     }),
     getTransactionsByCategoryId: builder.query({
       query: ({ userId, categoryId }) => `/fetch/${userId}/${categoryId}`,
