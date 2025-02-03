@@ -33,8 +33,8 @@ function TransactionsScreen() {
   const [selectedDate, setSelectedDate] = useState<String>();
 
   const [transactionQueryParams, setTransactionQueryParams] = useState({
-    month: 1,
-    year: 2025,
+    month: new Date().getMonth() + 1,
+    year: new Date().getFullYear(),
     date: undefined,
   });
 
@@ -254,11 +254,15 @@ function TransactionsScreen() {
               Transactions on {selectedDate}
             </Text> */}
             <View style={styles.closeButtonContainer}>
+              <Text style={styles.transactionHeading}>
+                {transaction?.length}
+              </Text>
+              <Text style={styles.transactionHeading}>Transaction(s)</Text>
               <Pressable
                 style={styles.closeButton}
                 onPress={() => {
                   setSelectedDate(undefined);
-                  setTransaction([]);
+                  // setTransaction([]);
                 }}>
                 <Text style={styles.closeButtonText}>x</Text>
               </Pressable>
@@ -394,13 +398,14 @@ const styles = StyleSheet.create({
   },
   closeButtonContainer: {
     width: windowWidth * 0.9,
-    height: 24,
 
-    alignItems: "flex-end",
+    alignItems: "center",
   },
   closeButton: {
     paddingLeft: 10,
     paddingRight: 10,
+    position: "absolute",
+    right: 0,
   },
   closeButtonText: {
     fontSize: 20,

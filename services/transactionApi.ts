@@ -9,7 +9,7 @@ export const transactionApi = createApi({
     getTransactionsByUserId: builder.query({
       query: ({ userId, month, year, date }) => {
         let url = `${userId}?`;
-        console.log(year, month);
+
         if (month && year) {
           url += `month=${month}&year=${year}`;
         }

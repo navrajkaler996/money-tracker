@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
     width: windowWidth * 0.9,
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between",
+    gap: windowWidth * 0.05,
   },
 });
 

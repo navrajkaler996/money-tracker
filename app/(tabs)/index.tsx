@@ -45,6 +45,11 @@ function HomeScreen() {
       totalCashAmount: 0,
       totalCreditAvailable: 0,
     });
+  const [transactionQueryParams, setTransactionQueryParams] = useState({
+    month: new Date().getMonth() + 1,
+    year: new Date().getFullYear(),
+    date: undefined,
+  });
 
   const {
     data: transactionsData,
@@ -52,8 +57,7 @@ function HomeScreen() {
     refetch: transactionRefect,
   } = useGetTransactionsByUserIdQuery({
     userId: userId,
-    month: 1,
-    year: 2025,
+    ...transactionQueryParams,
   });
   const { data: categoriesData, isLoading: categoriesIsLoading } =
     useGetCategoriesByUserIdQuery(userId);
