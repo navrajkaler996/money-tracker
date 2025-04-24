@@ -23,12 +23,14 @@ import { useCreateTransactionByUserIdMutation } from "@/services/transactionApi"
 import AddTransactionSkeleton from "@/components/skeletons/addTransactionSkeleton";
 
 import { ACCOUNT_TYPES, COLORS } from "@/utils/constants";
+import RadioGroup from "@/components/RadioGroup";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
 //Component to add a transaction
 const addTransaction = () => {
+  const accountTypes = ["debit", "credit", "cash"];
   const router = useRouter();
   const { userId } = useLocalSearchParams();
 
@@ -78,6 +80,8 @@ const addTransaction = () => {
   //State to show loader when form is submitted
   const [submitIsLoading, setSubmitIsLoading] = useState(false);
 
+  const [filteredBanks, setFilteredBanks] = useState([]);
+
   const [isFocus, setIsFocus] = useState(false);
 
   //USEEEFECTS
@@ -111,7 +115,7 @@ const addTransaction = () => {
   }, [accountsData]);
 
   useEffect(() => {
-    if (activeTab === "account") setSelectedAccountType(null);
+    // if (activeTab === "account" && sel) setSelectedAccountType(null);
   }, [activeTab]);
 
   //Creating data for dropdown in categoru tab
@@ -129,6 +133,28 @@ const addTransaction = () => {
     }
   }, [categoriesData]);
 
+  useEffect(() => {
+    if (selectedAccountType !== null && banks?.length > 0) {
+      const tempFilteredBanks = banks
+        .filter((bank: any) => bank.accountType === selectedAccountType)
+        .map((bank: any) => ({
+          label: bank.bankName,
+          value: bank.accountId,
+          ...bank,
+        }));
+
+      if (tempFilteredBanks?.length === 0) {
+        Alert.alert(
+          "No credit account linked",
+          "Please link a credit account."
+        );
+      }
+      setFilteredBanks(tempFilteredBanks);
+    }
+  }, [selectedAccountType]);
+
+  console.log(filteredBanks);
+
   //FUNCTIONS
   const handlePress = (value: string) => {
     setActiveTab(value);
@@ -142,10 +168,8 @@ const addTransaction = () => {
   //Handles first dropdown
   const handleAccountType = (item: any) => {
     //Creating data for second dropdown
-    if (item.value === "debit" || item.value === "credit") {
-      let tempData = banks.filter(
-        (bank: any) => bank?.accountType === item.value
-      );
+    if (item === "debit" || item === "credit") {
+      let tempData = banks.filter((bank: any) => bank?.accountType === item);
 
       if (tempData?.length > 0) {
         let banksDataForDropdown = tempData?.map((t: any) => {
@@ -174,7 +198,7 @@ const addTransaction = () => {
     }
 
     //Setting selected value for first dropwdown
-    setSelectedAccountType(item.value?.toLowerCase());
+    setSelectedAccountType(item?.toLowerCase());
   };
 
   //Handle form submit
@@ -247,6 +271,7 @@ const addTransaction = () => {
           <View style={styles.amountContainer}>
             <Text style={styles.currencySymbol}>$</Text>
             <TextInput
+              placeholder="0"
               style={styles.textInput}
               value={transaction.transaction_amount.toString()}
               onChangeText={(text) => {
@@ -327,7 +352,23 @@ const addTransaction = () => {
                   <>
                     <View>
                       {renderLabel("Select an account")}
-                      <Dropdown
+                      <RadioGroup
+                        values={accountTypes}
+                        radioGroupStyles={{
+                          flexDirection: "row",
+                          width: windowWidth * 0.8,
+                          justifyContent: "space-around",
+                          marginTop: 10,
+                        }}
+                        containerStyles={{
+                          borderBottomColor: "gray",
+                          borderBottomWidth: 0.5,
+                        }}
+                        radioButtonColor={COLORS["active-dark-green"]}
+                        selected={selectedAccountType}
+                        onSelected={handleAccountType}
+                      />
+                      {/* <Dropdown
                         style={[styles.dropdown]}
                         placeholderStyle={styles.placeholderStyle}
                         selectedTextStyle={styles.selectedTextStyle}
@@ -335,15 +376,17 @@ const addTransaction = () => {
                         iconStyle={styles.iconStyle}
                         data={ACCOUNT_TYPES}
                         onChange={function (item: any): void {
+                          console.log("----changed");
                           handleAccountType(item);
                         }}
                         maxHeight={300}
                         labelField={"label"}
-                        valueField={"value"}
-                        onFocus={() => setIsFocus(true)}></Dropdown>
+                        valueField={"value"}></Dropdown>
+                    </View> */}
                     </View>
                     {selectedAccountType !== null &&
-                      selectedAccountType !== "cash" && (
+                      selectedAccountType !== "cash" &&
+                      filteredBanks?.length > 0 && (
                         <View>
                           {renderLabel("Select your bank")}
                           <Dropdown
@@ -352,7 +395,7 @@ const addTransaction = () => {
                             selectedTextStyle={styles.selectedTextStyle}
                             inputSearchStyle={styles.inputSearchStyle}
                             iconStyle={styles.iconStyle}
-                            data={banksDropdownData}
+                            data={filteredBanks}
                             onChange={function (item: any): void {
                               setTransaction((prev: any) => {
                                 return {
@@ -363,8 +406,7 @@ const addTransaction = () => {
                             }}
                             maxHeight={300}
                             labelField={"label"}
-                            valueField={"value"}
-                            onFocus={() => setIsFocus(true)}></Dropdown>
+                            valueField={"value"}></Dropdown>
                         </View>
                       )}
                   </>
@@ -373,6 +415,7 @@ const addTransaction = () => {
                   <>
                     <View>
                       {renderLabel("Select a category")}
+
                       <Dropdown
                         style={[styles.dropdown]}
                         placeholderStyle={styles.placeholderStyle}

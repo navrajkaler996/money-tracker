@@ -1,17 +1,25 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Dimensions, StyleSheet, Text, View } from "react-native";
 
 import RadioButtonGroup, { RadioButtonItem } from "expo-radio-button";
 import { COLORS } from "@/utils/constants";
+const windowWidth = Dimensions.get("window").width;
 
-const RadioGroup = ({ values, selected, onSelected }) => {
+const RadioGroup = ({
+  values,
+  selected,
+  onSelected,
+  radioGroupStyles,
+  containerStyles,
+  radioButtonColor = COLORS["primary-1"],
+}) => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Account type</Text>
+    <View style={{ ...styles.container, ...containerStyles }}>
+      {/* {label && <Text style={styles.label}>Account type</Text>} */}
       <RadioButtonGroup
-        containerStyle={styles.radioButtonGroup}
+        containerStyle={{ ...styles.radioButtonGroup, ...radioGroupStyles }}
         selected={selected}
         onSelected={(value: string) => onSelected(value)}
-        radioBackground={COLORS["primary-1"]}>
+        radioBackground={radioButtonColor}>
         {values?.length > 0 &&
           values?.map((value: any) => {
             return (
@@ -40,6 +48,8 @@ const styles = StyleSheet.create({
   label: { fontFamily: "Aller_Rg", fontSize: 16 },
   radioButtonGroup: {
     gap: 10,
+    // flexDirection: "row",
+    // width: windowWidth * 0.8,
   },
   radioLabel: {
     marginLeft: 10,
