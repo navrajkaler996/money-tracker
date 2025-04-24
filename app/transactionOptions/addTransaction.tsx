@@ -436,11 +436,11 @@ const addTransaction = () => {
                         valueField={"value"}
                         onFocus={() => setIsFocus(true)}></Dropdown>
                     </View>
-                    <Pressable style={styles.categoryButton}>
+                    {/* <Pressable style={styles.categoryButton}>
                       <Text style={styles.categoryButtonText}>
                         Add category
                       </Text>
-                    </Pressable>
+                    </Pressable> */}
                   </>
                 )}
                 {activeTab === "description" && (
@@ -635,16 +635,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   categoryButton: {
-    width: windowWidth * 0.8,
+    width: windowWidth * 0.4,
     height: 40,
     backgroundColor: COLORS["primary-3"],
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 20,
+    borderRadius: 0,
   },
   categoryButtonText: {
     fontSize: 16,
-    textTransform: "uppercase",
+    textTransform: "lowercase",
     letterSpacing: 1,
     fontFamily: "Aller_Bd",
   },
