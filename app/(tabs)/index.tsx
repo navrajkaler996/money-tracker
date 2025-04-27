@@ -66,12 +66,15 @@ function HomeScreen() {
     data: accountsData,
     isLoading: accountsIsLoading,
     error: accountsError,
+    refetch: accountRefetch,
   } = useGetAccountsQuery(userId);
 
   //Using useFocusEffect hook to call transactionRefect()
   /////This will update the transaction data
   useFocusEffect(() => {
     transactionRefect();
+    accountRefetch();
+    console.log("yes");
   });
 
   //Creating expenses for user
@@ -213,6 +216,8 @@ function HomeScreen() {
         <ActivityIndicator size="large" color={COLORS["primary-3"]} />
       </View>
     );
+
+  console.log("-----ss", accountsData);
 
   return (
     <View style={styles.container}>

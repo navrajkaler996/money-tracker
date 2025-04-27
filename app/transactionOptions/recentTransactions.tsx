@@ -15,7 +15,7 @@ import { useGetAccountsQuery } from "@/services/accountApi";
 import { useGetCategoriesByUserIdQuery } from "@/services/categoryApi";
 import { useGetTransactionsByUserIdQuery } from "@/services/transactionApi";
 
-import { COLORS, MONTHS } from "@/utils/constants";
+import { ACCOUNT_TYPES, COLORS, MONTHS } from "@/utils/constants";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import TransactionsFlatList from "@/components/TransactionsFlatList";
 import { useAuth } from "@/context/AuthContext";
@@ -23,10 +23,25 @@ import { useAuth } from "@/context/AuthContext";
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
+interface CalculatedAmounts {
+  totalIncome: number;
+  totalNetWorth: number;
+  totalExpenses: number;
+}
+
 const RecentTransactions = () => {
   const navigation = useNavigation();
   const { userId } = useLocalSearchParams();
   const { user, token } = useAuth();
+
+  //State for calculate amounts
+  const [calculatedAmounts, setCalculatedAmounts] = useState<CalculatedAmounts>(
+    {
+      totalIncome: 0,
+      totalNetWorth: 0,
+      totalExpenses: 0,
+    }
+  );
 
   const [transactionQueryParams, setTransactionQueryParams] = useState({
     month: new Date().getMonth() + 1,
@@ -37,6 +52,7 @@ const RecentTransactions = () => {
   const {
     data: transactionsData,
     isLoading: transactionIsLoading,
+    error: transactionError,
     refetch: transactionRefect,
   } = useGetTransactionsByUserIdQuery({
     userId: userId,
@@ -54,6 +70,27 @@ const RecentTransactions = () => {
 
   const [transaction, setTransaction] = useState([]);
 
+  useEffect(() => {
+    if (transactionsData && categoriesData && accountsData) {
+      const result = createTransaction(
+        transactionsData,
+        categoriesData,
+        accountsData
+      );
+
+      if (result) setTransaction(result);
+    }
+
+    if (accountsData) {
+      calculateNetWorth(accountsData);
+    }
+
+    if (transactionsData) {
+      calculateExpenses(transactionsData);
+    }
+  }, [transactionsData, categoriesData, accountsData]);
+
+  //Function to create transactions
   const createTransaction = (
     transactionsData: any,
     categoriesData: any,
@@ -82,19 +119,49 @@ const RecentTransactions = () => {
     return transaction;
   };
 
-  const getMonth = (month: string) => MONTHS[Number(month)];
+  //Function to calculate networth
+  const calculateNetWorth = (accountsData: any) => {
+    let totalNetWorthTemp = 0;
 
-  useEffect(() => {
-    if (transactionsData && categoriesData && accountsData) {
-      const result = createTransaction(
-        transactionsData,
-        categoriesData,
-        accountsData
+    accountsData.forEach((account: any) => {
+      if (account.account_type === "debit" || account.account_type === "cash")
+        totalNetWorthTemp = totalNetWorthTemp + account.total_amount;
+      else {
+        totalNetWorthTemp =
+          totalNetWorthTemp - (account.credit_limit - account.available_credit);
+      }
+    });
+
+    setCalculatedAmounts((prev) => {
+      return {
+        ...prev,
+        totalNetWorth: totalNetWorthTemp,
+      };
+    });
+  };
+
+  //Function to calculate total expenses
+  const calculateExpenses = (transactionsData: any) => {
+    let totalExpensesTemp = 0;
+
+    if (transactionsData?.length > 0) {
+      totalExpensesTemp = transactionsData.reduce(
+        (accumulator: Number, transaction: any) => {
+          return accumulator + transaction.transaction_amount;
+        },
+        0
       );
-
-      if (result) setTransaction(result);
     }
-  }, [transactionsData, categoriesData, accountsData]);
+
+    setCalculatedAmounts((prev) => {
+      return {
+        ...prev,
+        totalExpenses: totalExpensesTemp,
+      };
+    });
+  };
+
+  const getMonth = (month: string) => MONTHS[Number(month)];
 
   return (
     <View style={styles.container}>
@@ -131,23 +198,44 @@ const RecentTransactions = () => {
             </View>
             <View style={styles.viewInGradient}>
               <Text style={styles.textHeading}>Net worth</Text>
-              <Text style={styles.textNumbers}>$1000</Text>
+              <Text style={styles.textNumbers}>
+                ${calculatedAmounts.totalNetWorth}
+              </Text>
             </View>
             <View style={styles.viewInGradient}>
               <Text style={styles.textHeading}>Expenses</Text>
-              <Text style={styles.textNumbers}>$1000</Text>
+              <Text style={styles.textNumbers}>
+                ${calculatedAmounts.totalExpenses}
+              </Text>
             </View>
           </View>
         </LinearGradient>
       </View>
+      <View style={styles.transactionListContainer}>
+        {/* Error State */}
+        {!transactionIsLoading && transactionError && (
+          <View style={styles.transactionGradientContainer}>
+            <Text style={styles.errorText}>
+              Error while loading transactions
+            </Text>
+          </View>
+        )}
 
-      {!transactionIsLoading && transaction?.length > 0 && (
-        <ScrollView contentContainerStyle={styles.transactionListContainer}>
+        {/* Transactions List */}
+        {!transactionIsLoading && transaction?.length > 0 && (
           <View style={styles.transactionGradientContainer}>
             <TransactionsFlatList data={transaction} />
           </View>
-        </ScrollView>
-      )}
+        )}
+
+        {/* No Transactions Found */}
+        {!transactionIsLoading &&
+          (!transaction || transaction.length === 0) && (
+            <View style={styles.transactionGradientContainer}>
+              <Text>No transactions found</Text>
+            </View>
+          )}
+      </View>
     </View>
   );
 };
@@ -294,6 +382,14 @@ const styles = StyleSheet.create({
   },
   accountNameText: { fontFamily: "Aller_Rg", textTransform: "uppercase" },
   accountNumberText: { fontFamily: "Aller_Rg" },
+  errorText: {
+    color: COLORS.error,
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginTop: 20,
+    marginBottom: 20,
+  },
 });
 
 export default RecentTransactions;
