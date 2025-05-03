@@ -127,8 +127,7 @@ const RecentTransactions = () => {
       if (account.account_type === "debit" || account.account_type === "cash")
         totalNetWorthTemp = totalNetWorthTemp + account.total_amount;
       else {
-        totalNetWorthTemp =
-          totalNetWorthTemp - (account.credit_limit - account.available_credit);
+        totalNetWorthTemp = totalNetWorthTemp - account.available_credit;
       }
     });
 

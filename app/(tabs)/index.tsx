@@ -74,7 +74,6 @@ function HomeScreen() {
   useFocusEffect(() => {
     transactionRefect();
     accountRefetch();
-    console.log("yes");
   });
 
   //Creating expenses for user
@@ -216,8 +215,6 @@ function HomeScreen() {
         <ActivityIndicator size="large" color={COLORS["primary-3"]} />
       </View>
     );
-
-  console.log("-----ss", accountsData);
 
   return (
     <View style={styles.container}>

@@ -79,6 +79,14 @@ const addTransaction = () => {
   const [categoriesDropdownData, setCategoriesDropdownData] = useState([]);
   //State to show loader when form is submitted
   const [submitIsLoading, setSubmitIsLoading] = useState(false);
+  //State to track if there is a cash account or not
+  const [hasCashAccount, setHasCashAccount] = useState(false);
+  //State to save account amounts
+  const [accountAmounts, setAccountAmounts] = useState({
+    debit: 0,
+    credit: 0,
+    cash: 0,
+  });
 
   const [filteredBanks, setFilteredBanks] = useState([]);
 
@@ -100,6 +108,7 @@ const addTransaction = () => {
   /////using accountsData from API
   useEffect(() => {
     if (accountsData) {
+      //Collecting data from debit and credit dropdowns
       const tempBanks = accountsData
         ?.filter((account: any) => {
           return account.bank_name !== null && account.bank_name !== undefined;
@@ -111,6 +120,27 @@ const addTransaction = () => {
         }));
 
       setBanks(tempBanks);
+
+      //
+      let accountAmountsTemp = {
+        debit: 0,
+        credit: 0,
+        cash: 0,
+      };
+
+      accountsData?.forEach((account: any) => {
+        if (account?.account_type === "debit") {
+          accountAmountsTemp.debit += account.total_amount;
+        } else if (account?.account_type === "credit") {
+          // accountAmountsTemp.credit += account.total_amount;
+          accountAmountsTemp.credit =
+            account.credit_limit - account.available_credit;
+        } else if (account?.account_type === "cash") {
+          accountAmountsTemp.cash += account.total_amount;
+        }
+      });
+
+      setAccountAmounts(accountAmountsTemp);
     }
   }, [accountsData]);
 
@@ -143,17 +173,24 @@ const addTransaction = () => {
           ...bank,
         }));
 
-      if (tempFilteredBanks?.length === 0) {
+      if (tempFilteredBanks?.length === 0 && selectedAccountType !== "cash") {
         Alert.alert(
           "No credit account linked",
           "Please link a credit account."
         );
       }
+
       setFilteredBanks(tempFilteredBanks);
+
+      if (selectedAccountType !== null && selectedAccountType === "cash") {
+        const hasCashAccountTemp = accountsData?.some(
+          (account: any) => account.account_type === "cash"
+        );
+
+        setHasCashAccount(hasCashAccountTemp);
+      }
     }
   }, [selectedAccountType]);
-
-  console.log(filteredBanks);
 
   //FUNCTIONS
   const handlePress = (value: string) => {
@@ -215,6 +252,26 @@ const addTransaction = () => {
 
     if (transaction.category_id === null) {
       Alert.alert("Missing Category", "Please select a category.");
+      return;
+    }
+
+    if (
+      selectedAccountType === "debit" &&
+      transaction.transaction_amount > accountAmounts.debit
+    ) {
+      Alert.alert("Not enough funds", "");
+      return;
+    } else if (
+      selectedAccountType === "credit" &&
+      transaction.transaction_amount > accountAmounts.credit
+    ) {
+      Alert.alert("Credit limit reached", "");
+      return;
+    } else if (
+      selectedAccountType === "cash" &&
+      transaction.transaction_amount > accountAmounts.cash
+    ) {
+      Alert.alert("Not enough funds", "");
       return;
     }
 
@@ -407,6 +464,27 @@ const addTransaction = () => {
                             maxHeight={300}
                             labelField={"label"}
                             valueField={"value"}></Dropdown>
+                        </View>
+                      )}
+
+                    {selectedAccountType !== null &&
+                      selectedAccountType == "cash" && (
+                        <View style={styles.totalCashContainer}>
+                          {hasCashAccount ? (
+                            <>
+                              {" "}
+                              <Text style={styles.totalCashText}>
+                                Total cash
+                              </Text>
+                              <Text style={styles.totalCashValue}>
+                                ${accountAmounts.cash}
+                              </Text>{" "}
+                            </>
+                          ) : (
+                            <Text style={styles.totalCashText}>
+                              No cash available
+                            </Text>
+                          )}
                         </View>
                       )}
                   </>
@@ -678,6 +756,24 @@ const styles = StyleSheet.create({
   addButtonText: {
     fontFamily: "Aller_Bd",
     fontSize: 20,
+    textTransform: "uppercase",
+    letterSpacing: 0.2,
+  },
+  totalCashContainer: {
+    width: windowWidth * 0.8,
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+  },
+  totalCashText: {
+    fontFamily: "Aller_Rg",
+    fontSize: 16,
+
+    letterSpacing: 0.2,
+  },
+  totalCashValue: {
+    fontFamily: "Aller_Bd",
+    fontSize: 30,
     textTransform: "uppercase",
     letterSpacing: 0.2,
   },
