@@ -224,14 +224,15 @@ const addTransaction = () => {
       const cashAccountId = accountsData?.find(
         (account: any) => account.account_type === "cash"
       );
-
-      //Setting cash account id as final account id
-      setTransaction((prev: any) => {
-        return {
-          ...prev,
-          account_id: cashAccountId.account_id,
-        };
-      });
+      if (cashAccountId) {
+        //Setting cash account id as final account id
+        setTransaction((prev: any) => {
+          return {
+            ...prev,
+            account_id: cashAccountId.account_id,
+          };
+        });
+      }
     }
 
     //Setting selected value for first dropwdown
