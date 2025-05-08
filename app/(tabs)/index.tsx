@@ -26,7 +26,7 @@ const windowWidth = Dimensions.get("window").width;
 interface CalculatedAccounts {
   totalDebitAmount: number;
   totalCashAmount: number;
-  totalCreditAvailable: number;
+  totalCredit: number;
 }
 
 function HomeScreen() {
@@ -43,7 +43,7 @@ function HomeScreen() {
     useState<CalculatedAccounts>({
       totalDebitAmount: 0,
       totalCashAmount: 0,
-      totalCreditAvailable: 0,
+      totalCredit: 0,
     });
   const [transactionQueryParams, setTransactionQueryParams] = useState({
     month: new Date().getMonth() + 1,
@@ -102,7 +102,7 @@ function HomeScreen() {
     if (accountsData?.length > 0) {
       let totalDebitAmount = 0;
       let totalCashAmount = 0;
-      let totalCreditAvailable = 0;
+      let totalCredit = 0;
 
       // Calculate total debit amount if there are debit accounts
       if (
@@ -132,10 +132,11 @@ function HomeScreen() {
       if (
         accountsData.some((account: any) => account.account_type === "credit")
       ) {
-        totalCreditAvailable = accountsData
+        totalCredit = accountsData
           .filter((account: any) => account.account_type === "credit")
           .reduce(
-            (total: number, account: any) => total + account.available_credit,
+            (total: number, account: any) =>
+              total + (account.credit_limit - account.available_credit),
             0
           );
       }
@@ -143,7 +144,7 @@ function HomeScreen() {
       setCalculatedAccounts({
         totalCashAmount,
         totalDebitAmount,
-        totalCreditAvailable,
+        totalCredit,
       });
     }
   }, [accountsData]);
@@ -248,7 +249,7 @@ function HomeScreen() {
             <View style={styles.viewInGradient}>
               <Text style={styles.textHeading}>Credit</Text>
               <Text style={styles.textNumbers}>
-                ${calculatedAccounts.totalCreditAvailable}
+                ${calculatedAccounts.totalCredit}
               </Text>
             </View>
           </View>
