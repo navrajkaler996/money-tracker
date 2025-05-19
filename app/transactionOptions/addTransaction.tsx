@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -39,6 +39,7 @@ const addTransaction = () => {
     data: accountsData,
     isLoading: accountsIsLoading,
     error: accountsError,
+    refetch: accountsRefetch,
   } = useGetAccountsQuery(userId);
 
   //Fetching categories using userId API
@@ -106,43 +107,85 @@ const addTransaction = () => {
 
   //Creating data for dropdowns in account tab
   /////using accountsData from API
-  useEffect(() => {
-    if (accountsData) {
-      //Collecting data from debit and credit dropdowns
-      const tempBanks = accountsData
-        ?.filter((account: any) => {
-          return account.bank_name !== null && account.bank_name !== undefined;
-        })
-        .map((account: any) => ({
-          accountType: account.account_type,
-          bankName: account.bank_name,
-          accountId: account.account_id,
-        }));
+  // useEffect(() => {
+  //   if (accountsData) {
+  //     //Collecting data from debit and credit dropdowns
+  //     const tempBanks = accountsData
+  //       ?.filter((account: any) => {
+  //         return account.bank_name !== null && account.bank_name !== undefined;
+  //       })
+  //       .map((account: any) => ({
+  //         accountType: account.account_type,
+  //         bankName: account.bank_name,
+  //         accountId: account.account_id,
+  //       }));
 
-      setBanks(tempBanks);
+  //     setBanks(tempBanks);
 
-      //
-      let accountAmountsTemp = {
-        debit: 0,
-        credit: 0,
-        cash: 0,
-      };
+  //     //
+  //     let accountAmountsTemp = {
+  //       debit: 0,
+  //       credit: 0,
+  //       cash: 0,
+  //     };
 
-      accountsData?.forEach((account: any) => {
-        if (account?.account_type === "debit") {
-          accountAmountsTemp.debit += account.total_amount;
-        } else if (account?.account_type === "credit") {
-          // accountAmountsTemp.credit += account.total_amount;
-          accountAmountsTemp.credit =
-            account.credit_limit - account.available_credit;
-        } else if (account?.account_type === "cash") {
-          accountAmountsTemp.cash += account.total_amount;
-        }
-      });
+  //     accountsData?.forEach((account: any) => {
+  //       if (account?.account_type === "debit") {
+  //         accountAmountsTemp.debit += account.total_amount;
+  //       } else if (account?.account_type === "credit") {
+  //         // accountAmountsTemp.credit += account.total_amount;
+  //         accountAmountsTemp.credit =
+  //           account.credit_limit - account.available_credit;
+  //       } else if (account?.account_type === "cash") {
+  //         accountAmountsTemp.cash += account.total_amount;
+  //       }
+  //     });
 
-      setAccountAmounts(accountAmountsTemp);
-    }
-  }, [accountsData]);
+  //     setAccountAmounts(accountAmountsTemp);
+  //   }
+  // }, [accountsData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      accountsRefetch();
+    }, [accountsRefetch])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (accountsData) {
+        // Collecting data from debit, credit, and cash accounts
+        const tempBanks = accountsData
+          .filter((account: any) => account.bank_name != null)
+          .map((account: any) => ({
+            accountType: account.account_type,
+            bankName: account.bank_name,
+            accountId: account.account_id,
+          }));
+
+        setBanks(tempBanks);
+
+        const accountAmountsTemp = {
+          debit: 0,
+          credit: 0,
+          cash: 0,
+        };
+
+        accountsData.forEach((account: any) => {
+          if (account.account_type === "debit") {
+            accountAmountsTemp.debit += account.total_amount || 0;
+          } else if (account.account_type === "credit") {
+            accountAmountsTemp.credit +=
+              (account.credit_limit || 0) - (account.available_credit || 0);
+          } else if (account.account_type === "cash") {
+            accountAmountsTemp.cash += account.total_amount || 0;
+          }
+        });
+
+        setAccountAmounts(accountAmountsTemp);
+      }
+    }, [accountsData]) // Trigger when accountsData changes or screen focuses
+  );
 
   useEffect(() => {
     // if (activeTab === "account" && sel) setSelectedAccountType(null);
