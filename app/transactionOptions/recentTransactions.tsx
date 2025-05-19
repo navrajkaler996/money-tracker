@@ -81,6 +81,7 @@ const RecentTransactions = () => {
       if (result) setTransaction(result);
     }
 
+    //Calculate networth
     if (accountsData) {
       calculateNetWorth(accountsData);
     }

@@ -3,6 +3,11 @@ import {
   useGetAccountsQuery,
   useInsertAccountsMutation,
 } from "@/services/accountApi";
+import { useGetExpensesByUserIdQuery } from "@/services/expenseApi";
+import {
+  useGetTransactionsByCategoryIdQuery,
+  useGetTransactionsByUserIdQuery,
+} from "@/services/transactionApi";
 import { COLORS, STYLES } from "@/utils/constants";
 import { LinearGradient } from "expo-linear-gradient";
 import {
@@ -11,7 +16,7 @@ import {
   useNavigation,
   useRouter,
 } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Dimensions,
   Image,
@@ -27,6 +32,12 @@ import Toast from "react-native-toast-message";
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
+interface CalculatedAmounts {
+  totalIncome: number;
+  totalNetWorth: number;
+  totalLiabilities: number;
+}
+
 const AccountsScreen = () => {
   const router = useRouter();
   const { user } = useAuth();
@@ -40,9 +51,31 @@ const AccountsScreen = () => {
     refetch: accountsRefetch,
   } = useGetAccountsQuery(userId);
 
+  const {
+    data: transactionsData,
+    isLoading: transactionIsLoading,
+    error: transactionError,
+    refetch: transactionRefect,
+  } = useGetTransactionsByUserIdQuery({
+    userId: userId,
+  });
+
+  //State for calculate amounts
+  const [calculatedAmounts, setCalculatedAmounts] = useState<CalculatedAmounts>(
+    {
+      totalIncome: 0,
+      totalNetWorth: 0,
+      totalLiabilities: 0,
+    }
+  );
+
   const [debitAccounts, setDebitAccounts] = useState([]);
   const [creditAccounts, setCreditAccounts] = useState([]);
   const [cashAccount, setCashAccount] = useState([]);
+
+  //State to store expenses for debit accounts and cash accounts
+  const [debitAccountsExpenses, setDebitAccountsExpenses] = useState([]);
+  const [cashAccountExpenses, setcashAccountExpenses] = useState([]);
 
   useEffect(() => {
     if (accountsData?.length > 0) {
@@ -59,12 +92,20 @@ const AccountsScreen = () => {
       setDebitAccounts(debit);
       setCreditAccounts(credit);
       setCashAccount(cash);
+
+      //Calculate networth
+      if (accountsData) {
+        calculateNetWorth(accountsData);
+      }
     }
   }, [accountsData]);
 
-  useFocusEffect(() => {
-    accountsRefetch();
-  });
+  useFocusEffect(
+    useCallback(() => {
+      accountsRefetch();
+      transactionRefect();
+    }, [])
+  );
 
   //Showing toast notification when transaction is added
   useEffect(() => {
@@ -91,7 +132,86 @@ const AccountsScreen = () => {
     if (user) setUserId(user?.userId);
   }, [user]);
 
+  useFocusEffect(
+    useCallback(() => {
+      if (accountsData && transactionsData) {
+        //Calculate expenses for debit accounts
+        let debitAccounts = accountsData.filter(
+          (account: any) => account.account_type === "debit"
+        );
+
+        debitAccounts = debitAccounts.map((account: any) => {
+          const relatedTransactions = transactionsData.filter(
+            (transaction: any) => transaction.account_id === account.account_id
+          );
+          const totalExpense = relatedTransactions.reduce(
+            (sum: number, transaction: any) =>
+              sum + (transaction.transaction_amount || 0),
+            0
+          );
+          return {
+            ...account,
+            totalExpense,
+          };
+        });
+
+        setDebitAccountsExpenses(debitAccounts);
+
+        //Calculate expenses for cash accounts
+
+        let cashAccounts = accountsData.filter(
+          (account: any) => account.account_type === "cash"
+        );
+
+        cashAccounts = cashAccounts.map((account: any) => {
+          const relatedTransactions = transactionsData.filter(
+            (transaction: any) => transaction.account_id === account.account_id
+          );
+          const totalExpense = relatedTransactions.reduce(
+            (sum: number, transaction: any) =>
+              sum + (transaction.transaction_amount || 0),
+            0
+          );
+          return {
+            ...account,
+            totalExpense,
+          };
+        });
+
+        setcashAccountExpenses(cashAccounts);
+      }
+    }, [accountsData, transactionsData]) // only re-run when data changes
+  );
+
   //Functions
+
+  //Function to calculate networth
+  const calculateNetWorth = (accountsData: any) => {
+    let totalNetWorthTemp = 0;
+    let totalLiabilitiesTemp = 0;
+
+    accountsData.forEach((account: any) => {
+      if (account.account_type === "debit" || account.account_type === "cash")
+        totalNetWorthTemp = totalNetWorthTemp + account.total_amount;
+      else {
+        totalNetWorthTemp =
+          totalNetWorthTemp - (account.credit_limit - account.available_credit);
+
+        //Calculating total liabilities using credit account info
+        totalLiabilitiesTemp =
+          totalLiabilitiesTemp +
+          (account.credit_limit - account.available_credit);
+      }
+    });
+
+    setCalculatedAmounts((prev) => {
+      return {
+        ...prev,
+        totalNetWorth: totalNetWorthTemp,
+        totalLiabilities: totalLiabilitiesTemp,
+      };
+    });
+  };
 
   const handleAddAccount = () => {
     router.push({
@@ -113,111 +233,144 @@ const AccountsScreen = () => {
             </View>
             <View style={styles.viewInGradient}>
               <Text style={styles.textHeading}>Net worth</Text>
-              <Text style={styles.textNumbers}>$1000</Text>
+              <Text style={styles.textNumbers}>
+                ${calculatedAmounts.totalNetWorth}
+              </Text>
             </View>
             <View style={styles.viewInGradient}>
               <Text style={styles.textHeading}>Liabilities</Text>
-              <Text style={styles.textNumbers}>$1000</Text>
+              <Text style={styles.textNumbers}>
+                {calculatedAmounts.totalLiabilities !== 0
+                  ? `-$${calculatedAmounts.totalLiabilities}`
+                  : "$0"}
+              </Text>
             </View>
           </View>
         </LinearGradient>
       </View>
       <ScrollView>
-        <View style={styles.accountContainer}>
-          <View style={styles.accountTypeContainer}>
-            <Text style={styles.accountType}>Debit accounts</Text>
-          </View>
-          {debitAccounts?.map((account: any, i: number) => {
-            return (
-              <View
-                style={
-                  i !== debitAccounts?.length - 1
-                    ? styles.account
-                    : [styles.account, { marginBottom: 0 }]
-                }>
-                <View style={styles.logoContainer}>
-                  <Image
-                    style={styles.bankLogo}
-                    source={require("../../assets/images/icons/cibc.png")}
-                  />
-                </View>
-                <View style={styles.infoContainer}>
-                  <Text style={styles.bankName}>{account.bank_name}</Text>
-                  <Text style={styles.totalAmount}>
-                    ${account.total_amount}
-                  </Text>
-                  <View style={styles.amountContainer}>
-                    <Text style={styles.income}>+$1700</Text>
-                    <Text style={styles.expense}>-$978</Text>
+        {debitAccounts?.length > 0 && (
+          <View style={styles.accountContainer}>
+            <View style={styles.accountTypeContainer}>
+              <Text style={styles.accountType}>Debit accounts</Text>
+            </View>
+            {debitAccounts?.map((account: any, i: number) => {
+              return (
+                <View
+                  style={
+                    i !== debitAccounts?.length - 1
+                      ? styles.account
+                      : [styles.account, { marginBottom: 0 }]
+                  }>
+                  <View style={styles.logoContainer}>
+                    <Image
+                      style={styles.bankLogo}
+                      source={require("../../assets/images/icons/cibc.png")}
+                    />
+                  </View>
+                  <View style={styles.infoContainer}>
+                    <Text style={styles.bankName}>{account.bank_name}</Text>
+                    <Text style={styles.totalAmount}>
+                      ${account.total_amount}
+                    </Text>
+                    <View style={styles.amountContainer}>
+                      <Text style={styles.income}>+$1700</Text>
+                      <Text style={styles.expense}>
+                        -$
+                        {
+                          debitAccountsExpenses?.find(
+                            (expense: any) =>
+                              account.account_id === expense.account_id &&
+                              expense.totalExpense !== undefined
+                          )?.totalExpense
+                        }
+                      </Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-            );
-          })}
-        </View>
-        <View style={styles.accountContainer}>
-          <View style={styles.accountTypeContainer}>
-            <Text style={styles.accountType}>Credit accounts</Text>
+              );
+            })}
           </View>
-          {creditAccounts?.map((account: any, i: number) => {
-            return (
-              <View
-                style={
-                  i !== creditAccounts?.length - 1
-                    ? styles.account
-                    : [styles.account, { marginBottom: 0 }]
-                }>
-                <View style={styles.logoContainer}>
-                  <Image
-                    style={styles.bankLogo}
-                    source={require("../../assets/images/icons/cibc.png")}
-                  />
-                </View>
-                <View style={styles.infoContainer}>
-                  <Text style={styles.bankName}>{account.bank_name}</Text>
-                  <Text style={styles.totalAmount}>
-                    ${account.available_credit}
-                  </Text>
-                  <View style={styles.amountContainer}>
-                    <Text style={styles.income}>+$1700</Text>
-                    <Text style={styles.expense}>-$978</Text>
+        )}
+        {creditAccounts?.length > 0 && (
+          <View style={styles.accountContainer}>
+            <View style={styles.accountTypeContainer}>
+              <Text style={styles.accountType}>Credit accounts</Text>
+            </View>
+            {creditAccounts?.map((account: any, i: number) => {
+              return (
+                <View
+                  style={
+                    i !== creditAccounts?.length - 1
+                      ? styles.account
+                      : [styles.account, { marginBottom: 0 }]
+                  }>
+                  <View style={styles.logoContainer}>
+                    <Image
+                      style={styles.bankLogo}
+                      source={require("../../assets/images/icons/cibc.png")}
+                    />
+                  </View>
+                  <View style={styles.infoContainer}>
+                    <Text style={styles.bankName}>{account.bank_name}</Text>
+                    <Text style={styles.totalAmount}>
+                      ${account.available_credit}
+                    </Text>
+                    <View style={styles.amountContainer}>
+                      <Text style={styles.income}>+$1700</Text>
+                      <Text style={styles.expense}>
+                        -${account.credit_limit - account.available_credit}{" "}
+                        {/* Credit account expenses can be calculated directly */}
+                      </Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-            );
-          })}
-        </View>
-        <View style={styles.accountContainer}>
-          <View style={styles.accountTypeContainer}>
-            <Text style={styles.accountType}>Cash account</Text>
+              );
+            })}
           </View>
-          {cashAccount?.map((account: any, i: number) => {
-            return (
-              <View
-                style={
-                  i !== cashAccount?.length - 1
-                    ? styles.account
-                    : [styles.account, { marginBottom: 0 }]
-                }>
-                <View style={styles.logoContainer}>
-                  <Image
-                    style={styles.bankLogo}
-                    source={require("../../assets/images/icons/cibc.png")}
-                  />
-                </View>
-                <View style={styles.infoContainer}>
-                  <Text style={styles.totalAmount}>
-                    ${account.total_amount}
-                  </Text>
-                  <View style={styles.amountContainer}>
-                    <Text style={styles.income}>+$1700</Text>
-                    <Text style={styles.expense}>-$978</Text>
+        )}
+        {cashAccount?.length > 0 && (
+          <View style={styles.accountContainer}>
+            <View style={styles.accountTypeContainer}>
+              <Text style={styles.accountType}>Cash account</Text>
+            </View>
+            {cashAccount?.map((account: any, i: number) => {
+              return (
+                <View
+                  style={
+                    i !== cashAccount?.length - 1
+                      ? styles.account
+                      : [styles.account, { marginBottom: 0 }]
+                  }>
+                  <View style={styles.logoContainer}>
+                    <Image
+                      style={styles.bankLogo}
+                      source={require("../../assets/images/icons/cibc.png")}
+                    />
+                  </View>
+                  <View style={styles.infoContainer}>
+                    <Text style={styles.totalAmount}>
+                      ${account.total_amount}
+                    </Text>
+                    <View style={styles.amountContainer}>
+                      <Text style={styles.income}>+$1700</Text>
+                      <Text style={styles.expense}>
+                        -$
+                        {
+                          cashAccountExpenses?.find(
+                            (expense: any) =>
+                              account.account_id === expense.account_id &&
+                              expense.totalExpense !== undefined
+                          )?.totalExpense
+                        }
+                      </Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-            );
-          })}
-        </View>
+              );
+            })}
+          </View>
+        )}
       </ScrollView>
       <TouchableOpacity
         style={[styles.addAccount, STYLES.SHADOW_1]}
