@@ -61,8 +61,11 @@ const editAccount = () => {
   } = useGetCategoriesByUserIdQuery(userId);
 
   const [transaction, setTransaction] = useState([]);
-
+  //State to expand the transactions list. By default only recent 2 transactions will be visible.
+  //while -1 means, entire list will be visible
   const [transactionListLimit, setTransactionListLimit] = useState(2);
+  //State to show income form
+  const [showIncomeForm, setShowIncomeForm] = useState(false);
 
   const [selectedAccountType, setSelectedAccountType] = useState("debit");
   const [selectedBankName, setSelectedBankName] = useState("");
@@ -201,6 +204,16 @@ const editAccount = () => {
     else setTransactionListLimit(-1);
   };
 
+  const handleAddIncome = () => {
+    router.push({
+      pathname: "/incomeOptions/addIncome",
+      params: {
+        account: JSON.stringify(account),
+        userId,
+      },
+    });
+  };
+
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <ScrollView
@@ -271,8 +284,19 @@ const editAccount = () => {
                 error={undefined}
               />
             )} */}
+            <TouchableOpacity
+              style={styles.incomeContainer}
+              onPress={handleAddIncome}>
+              <Image
+                source={require("../../assets/images/icons/income.png")}
+                style={styles.incomeImage}
+              />
+              <Text style={styles.incomeText}>
+                Set up income for this account
+              </Text>
+            </TouchableOpacity>
             <Button
-              text="Add account"
+              text="Edit account"
               buttonStyles={{ marginTop: 10, marginBottom: 30 }}
               onPress={handleAddAccount}
             />
@@ -370,6 +394,22 @@ const styles = StyleSheet.create({
     fontFamily: "Aller_Rg",
     fontSize: 20,
     marginBottom: 20,
+  },
+  incomeContainer: {
+    flexDirection: "row",
+    // alignSelf: "flex-start",
+    width: windowWidth * 0.8,
+    alignItems: "center",
+  },
+  incomeImage: {
+    width: 25,
+    height: 25,
+    marginRight: 5,
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  incomeText: {
+    fontFamily: "Aller_Rg",
   },
 });
 

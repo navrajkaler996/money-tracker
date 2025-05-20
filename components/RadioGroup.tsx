@@ -11,10 +11,11 @@ const RadioGroup = ({
   radioGroupStyles,
   containerStyles,
   radioButtonColor = COLORS["primary-1"],
+  label = null,
 }) => {
   return (
     <View style={{ ...styles.container, ...containerStyles }}>
-      {/* {label && <Text style={styles.label}>Account type</Text>} */}
+      {label && <Text style={styles.label}>{label}</Text>}
       <RadioButtonGroup
         containerStyle={{ ...styles.radioButtonGroup, ...radioGroupStyles }}
         selected={selected}
