@@ -17,15 +17,18 @@ interface Transaction {
 
 interface TransactionsFlatListProps {
   data: Transaction[];
+  limit: number;
 }
 
 //Component to render list of transactions
 const TransactionsFlatList: React.FC<TransactionsFlatListProps> = ({
   data,
+  limit = -1,
 }) => {
+  const limitedData = limit > 0 ? data.slice(0, limit) : data;
   return (
     <FlatList
-      data={data} // assuming you have a data source like this
+      data={limitedData} // assuming you have a data source like this
       // keyExtractor={(item) => item.id.toString()} // assuming each transaction has a unique id
       renderItem={({ item }) => (
         <View style={styles.transactionItem}>
@@ -37,11 +40,16 @@ const TransactionsFlatList: React.FC<TransactionsFlatListProps> = ({
           </View>
           <View style={styles.transactionInfo}>
             <Text style={styles.categoryText}>{item.categoryName}</Text>
-            <Text style={styles.accountNameText}>
-              {item.accountType !== "cash"
-                ? `${item.bankName} - ${item.accountType}`
-                : item.accountType}
-            </Text>
+            {item.accountType ? (
+              <Text style={styles.accountNameText}>
+                {item.accountType !== "cash"
+                  ? `${item.bankName} - ${item.accountType}`
+                  : item.accountType}
+              </Text>
+            ) : (
+              <Text style={styles.accountNameText}></Text>
+            )}
+
             <Text style={styles.accountNumberText}>{item.description}</Text>
             <Text style={styles.amountText}>-${item.transactionAmount}</Text>
           </View>

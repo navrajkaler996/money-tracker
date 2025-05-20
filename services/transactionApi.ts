@@ -33,6 +33,10 @@ export const transactionApi = createApi({
         body: payload,
       }),
     }),
+    getTransactionsByAccountId: builder.query({
+      query: ({ userId, accountId }) =>
+        `/fetch/byaccountid/${userId}/${accountId}`,
+    }),
   }),
 });
 
@@ -40,4 +44,5 @@ export const {
   useGetTransactionsByUserIdQuery,
   useCreateTransactionByUserIdMutation,
   useGetTransactionsByCategoryIdQuery,
+  useGetTransactionsByAccountIdQuery,
 } = transactionApi;

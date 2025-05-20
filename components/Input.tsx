@@ -19,6 +19,7 @@ interface InputProps {
   error?: string | null;
   value: string;
   textInputStyles?: TextStyle;
+  editable: Boolean;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -29,6 +30,7 @@ const Input: React.FC<InputProps> = ({
   error,
   value,
   textInputStyles,
+  editable = true,
 }) => {
   return (
     <View style={styles.container}>
@@ -37,12 +39,19 @@ const Input: React.FC<InputProps> = ({
         style={
           error
             ? [styles.textInput, { borderBottomColor: COLORS.error }]
+            : !editable
+            ? [
+                styles.textInput,
+                textInputStyles,
+                { backgroundColor: COLORS.disabled },
+              ]
             : [styles.textInput, textInputStyles]
         }
         placeholder={placeholder}
         keyboardType={numeric ? "numeric" : "default"}
         onChangeText={(text) => onChangeText(text)}
         value={String(value)}
+        editable={editable}
       />
       <Text style={styles.error}>{error}</Text>
     </View>
@@ -58,6 +67,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     height: 40,
     fontSize: 14,
+    paddingLeft: 5,
+    textTransform: "capitalize",
+    fontFamily: "Aller_Rg",
+    letterSpacing: 0.3,
   },
   error: { fontSize: 12, color: COLORS.error },
 });

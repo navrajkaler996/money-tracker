@@ -222,6 +222,16 @@ const AccountsScreen = () => {
     });
   };
 
+  const handleEditAccount = (account: any) => {
+    router.push({
+      pathname: "/accountOptions/editAccount",
+      params: {
+        account: JSON.stringify(account),
+        userId,
+      },
+    });
+  };
+
   return (
     <View style={styles.container}>
       <View style={[styles.gradientContainer, STYLES.SHADOW_1]}>
@@ -256,7 +266,8 @@ const AccountsScreen = () => {
             </View>
             {debitAccounts?.map((account: any, i: number) => {
               return (
-                <View
+                <TouchableOpacity
+                  onPress={() => handleEditAccount(account)}
                   style={
                     i !== debitAccounts?.length - 1
                       ? styles.account
@@ -287,7 +298,7 @@ const AccountsScreen = () => {
                       </Text>
                     </View>
                   </View>
-                </View>
+                </TouchableOpacity>
               );
             })}
           </View>

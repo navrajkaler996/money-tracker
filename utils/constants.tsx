@@ -9,6 +9,7 @@ export const COLORS = {
   income: "#4CAF50",
   expense: "#F44336",
   error: "#FF4D4D",
+  disabled: "#ddd",
 };
 
 export const ACCOUNT_TYPES = [

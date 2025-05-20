@@ -93,64 +93,14 @@ const addTransaction = () => {
 
   const [isFocus, setIsFocus] = useState(false);
 
-  //USEEEFECTS
-
-  //Initializing transaction
-  useEffect(() => {
-    setTransaction({
-      transaction_amount: 0,
-      account_id: null,
-      category_id: null,
-      description: "",
-    });
-  }, []);
-
-  //Creating data for dropdowns in account tab
-  /////using accountsData from API
-  // useEffect(() => {
-  //   if (accountsData) {
-  //     //Collecting data from debit and credit dropdowns
-  //     const tempBanks = accountsData
-  //       ?.filter((account: any) => {
-  //         return account.bank_name !== null && account.bank_name !== undefined;
-  //       })
-  //       .map((account: any) => ({
-  //         accountType: account.account_type,
-  //         bankName: account.bank_name,
-  //         accountId: account.account_id,
-  //       }));
-
-  //     setBanks(tempBanks);
-
-  //     //
-  //     let accountAmountsTemp = {
-  //       debit: 0,
-  //       credit: 0,
-  //       cash: 0,
-  //     };
-
-  //     accountsData?.forEach((account: any) => {
-  //       if (account?.account_type === "debit") {
-  //         accountAmountsTemp.debit += account.total_amount;
-  //       } else if (account?.account_type === "credit") {
-  //         // accountAmountsTemp.credit += account.total_amount;
-  //         accountAmountsTemp.credit =
-  //           account.credit_limit - account.available_credit;
-  //       } else if (account?.account_type === "cash") {
-  //         accountAmountsTemp.cash += account.total_amount;
-  //       }
-  //     });
-
-  //     setAccountAmounts(accountAmountsTemp);
-  //   }
-  // }, [accountsData]);
-
   useFocusEffect(
     useCallback(() => {
       accountsRefetch();
     }, [accountsRefetch])
   );
 
+  //Creating data for dropdowns in account tab
+  /////using accountsData from API
   useFocusEffect(
     useCallback(() => {
       if (accountsData) {
@@ -186,6 +136,18 @@ const addTransaction = () => {
       }
     }, [accountsData]) // Trigger when accountsData changes or screen focuses
   );
+
+  //USEEEFECTS
+
+  //Initializing transaction
+  useEffect(() => {
+    setTransaction({
+      transaction_amount: 0,
+      account_id: null,
+      category_id: null,
+      description: "",
+    });
+  }, []);
 
   useEffect(() => {
     // if (activeTab === "account" && sel) setSelectedAccountType(null);
