@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     height: 40,
     fontSize: 14,
     paddingLeft: 5,
-    textTransform: "capitalize",
+    textTransform: "lowercase",
     fontFamily: "Aller_Rg",
     letterSpacing: 0.3,
   },

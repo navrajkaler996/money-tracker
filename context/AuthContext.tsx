@@ -36,6 +36,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const login = (response: any) => {
+    console.log("-----", response);
     SecureStore.setItemAsync("token", response.access_token);
 
     SecureStore.setItemAsync("userId", response?.user?.id?.toString());

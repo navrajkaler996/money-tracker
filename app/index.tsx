@@ -6,7 +6,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as SecureStore from "expo-secure-store";
 import { jwtDecode } from "jwt-decode";
 
-import { useCreateUserMutation } from "@/services/userApi";
+import {
+  useCreateUserMutation,
+  useLoginUserMutation,
+} from "@/services/userApi";
 
 import Button from "@/components/Button";
 import Input from "@/components/Input";
@@ -26,6 +29,16 @@ function WelcomeScreen() {
   const [createUser, { isLoading, error, data: createUserData }] =
     useCreateUserMutation();
 
+  //API to login user
+  const [
+    loginUser,
+    {
+      isLoading: loginUserIsLoading,
+      error: loginUserError,
+      data: loginUserData,
+    },
+  ] = useLoginUserMutation();
+
   //States for form
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -39,8 +52,10 @@ function WelcomeScreen() {
   });
 
   const [isRegistered, setIsRegistered] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const [heightAnim] = useState(new Animated.Value(0));
+  const [registerAnim] = useState(new Animated.Value(0));
+  const [loginAnim] = useState(new Animated.Value(0));
 
   //USEEFFECTS
 
@@ -75,8 +90,17 @@ function WelcomeScreen() {
           user: createUserData,
         },
       });
+    } else if (isLoggedIn && loginUserData?.access_token) {
+      login(loginUserData);
+
+      router.push({
+        pathname: "/(tabs)",
+        params: {
+          user: loginUserData,
+        },
+      });
     }
-  }, [createUserData, isRegistered]);
+  }, [createUserData, isRegistered, loginUserData, isLoggedIn]);
 
   //useEffect to track if info in input fields is valid or not
   useEffect(() => {
@@ -87,11 +111,19 @@ function WelcomeScreen() {
 
   //Open the view according to the button pressed on welcome screen
   const handleNAvigation = (path: string) => {
-    Animated.timing(heightAnim, {
-      toValue: windowHeight * 0.8,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
+    if (path === "register") {
+      Animated.timing(registerAnim, {
+        toValue: windowHeight * 0.8,
+        duration: 200,
+        useNativeDriver: false,
+      }).start();
+    } else if (path === "login") {
+      Animated.timing(loginAnim, {
+        toValue: windowHeight * 0.8,
+        duration: 200,
+        useNativeDriver: false,
+      }).start();
+    }
   };
 
   //Function to validate form
@@ -192,6 +224,16 @@ function WelcomeScreen() {
     }
   };
 
+  const handleLogin = () => {
+    if (!errors.email && !errors.password) {
+      loginUser({
+        email: email,
+        password: password,
+      });
+      setIsLoggedIn(true);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -211,6 +253,9 @@ function WelcomeScreen() {
               borderWidth: 2,
               borderColor: "#fff",
             }}
+            onPress={() => {
+              handleNAvigation("login");
+            }}
           />
           <Text>OR</Text>
           <Button
@@ -225,7 +270,7 @@ function WelcomeScreen() {
         style={[
           styles.animatedContainer,
           STYLES.SHADOW_1,
-          { height: heightAnim },
+          { height: registerAnim },
         ]}>
         <View style={styles.formContainer}>
           <Text style={styles.heading}>Create an account</Text>
@@ -269,6 +314,50 @@ function WelcomeScreen() {
             />
             <View style={styles.divider}></View>
             <Text>Already have a account? Login</Text>
+          </View>
+        </View>
+      </Animated.View>
+      <Animated.View
+        style={[
+          styles.animatedContainer,
+          STYLES.SHADOW_1,
+          { height: loginAnim },
+        ]}>
+        <View style={styles.formContainer}>
+          <Text style={styles.heading}>Login to your account</Text>
+
+          <View style={styles.inputContainer}>
+            <Input
+              label="Email"
+              placeholder="Enter email..."
+              value={email}
+              onChangeText={setEmail}
+              error={errors.email}
+            />
+            <Input
+              label="Password"
+              placeholder="Enter password..."
+              value={password}
+              onChangeText={setPassword}
+              error={errors.password}
+            />
+          </View>
+
+          <View style={styles.buttonContainer2}>
+            <Button
+              text="Login"
+              onPress={handleLogin}
+              disabled={
+                errors.email ||
+                errors.password ||
+                errors.email !== null ||
+                errors.password !== null
+                  ? true
+                  : false
+              }
+            />
+            <View style={styles.divider}></View>
+            <Text>Don't have an account? Sign up</Text>
           </View>
         </View>
       </Animated.View>
