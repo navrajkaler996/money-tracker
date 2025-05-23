@@ -48,7 +48,7 @@ const editAccount = () => {
     data: transactionsData,
     isLoading: transactionIsLoading,
     error: transactionError,
-    refetch: transactionRefect,
+    refetch: transactionRefetch,
   } = useGetTransactionsByAccountIdQuery({
     userId: userId,
     accountId: account?.account_id,
@@ -90,6 +90,13 @@ const editAccount = () => {
       });
     }
   }, [insertAccountsData]);
+
+  //This useFocusEffect refetchs the transactionData
+  useFocusEffect(
+    useCallback(() => {
+      transactionRefetch();
+    }, [])
+  );
 
   useFocusEffect(
     useCallback(() => {

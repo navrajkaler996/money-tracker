@@ -55,7 +55,7 @@ const AccountsScreen = () => {
     data: transactionsData,
     isLoading: transactionIsLoading,
     error: transactionError,
-    refetch: transactionRefect,
+    refetch: transactionRefetch,
   } = useGetTransactionsByUserIdQuery({
     userId: userId,
   });
@@ -103,7 +103,7 @@ const AccountsScreen = () => {
   useFocusEffect(
     useCallback(() => {
       accountsRefetch();
-      transactionRefect();
+      transactionRefetch();
     }, [])
   );
 
