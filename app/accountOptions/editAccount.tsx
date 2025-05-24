@@ -14,16 +14,26 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 
+import { PieChart } from "react-native-chart-kit";
+
 import Input from "@/components/Input";
 import TransactionsFlatList from "@/components/TransactionsFlatList";
 import Button from "@/components/Button";
 
 import { useInsertAccountsMutation } from "@/services/accountApi";
 
-import { COLORS, ERRORS, STYLES } from "@/utils/constants";
+import {
+  CHART_COLORS,
+  COLORS,
+  ERRORS,
+  getRandomColor,
+  MONTHS,
+  STYLES,
+} from "@/utils/constants";
 
 import { useGetTransactionsByAccountIdQuery } from "@/services/transactionApi";
 import { useGetCategoriesByUserIdQuery } from "@/services/categoryApi";
+import { chartConfig } from "@/utils/helpers";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
@@ -95,6 +105,7 @@ const editAccount = () => {
   useFocusEffect(
     useCallback(() => {
       transactionRefetch();
+      createDataForBarChart(transactionsData);
     }, [])
   );
 
@@ -104,6 +115,8 @@ const editAccount = () => {
         const result = createTransaction(transactionsData, categoriesData);
 
         if (result) setTransaction(result);
+
+        createDataForPieChart(transactionsData, categoriesData);
       }
     }, [transactionsData, categoriesData])
   );
@@ -221,6 +234,70 @@ const editAccount = () => {
     });
   };
 
+  //console.log(transactionsData[0]);
+
+  const createDataForPieChart = (
+    transactionsData: any,
+    categoriesData: any
+  ) => {
+    let counter = -1;
+    let data = categoriesData?.map((category: any) => {
+      counter++;
+      return {
+        name: category.category_name,
+        category_id: category.id,
+        transaction_amount: 0,
+        color: CHART_COLORS[counter],
+        legendFontColor: "#7F7F7F",
+      };
+    });
+
+    transactionsData?.forEach((transaction: any) => {
+      data?.forEach((category: any) => {
+        if (category.category_id === transaction.category_id) {
+          category.transaction_amount += transaction.transaction_amount;
+        }
+      });
+    });
+
+    return data;
+  };
+
+  const createDataForBarChart = (transactionData: any) => {
+    const month = new Date().getMonth();
+
+    let data = {
+      labels: [],
+      datasets: [
+        {
+          data: [0, 0, 0, 0, 0, 0],
+        },
+      ],
+    };
+
+    for (let i = 5; i >= 0; i--) {
+      const index = (month - i + 12) % 12;
+      data.labels.push(index);
+    }
+
+    let labels = data.labels;
+    let datasets = [0, 0, 0, 0, 0, 0];
+    transactionData?.forEach((transaction: any) => {
+      const dateString = transaction.transaction_date;
+      const date = new Date(dateString);
+
+      const monthIndex = date.getMonth(); //4
+
+      let indexInLabel = labels.indexOf(monthIndex);
+
+      datasets[indexInLabel] += transaction.transaction_amount;
+    });
+
+    data.datasets[0].data = datasets;
+    console.log(datasets);
+    return data;
+  };
+
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <ScrollView
@@ -331,6 +408,25 @@ const editAccount = () => {
             </TouchableOpacity>
           </View>
         )}
+        {transactionsData?.length > 0 && categoriesData?.length > 0 && (
+          <View style={styles.chartContainer}>
+            <PieChart
+              data={createDataForPieChart(transactionsData, categoriesData)}
+              width={windowWidth * 0.8}
+              height={220}
+              chartConfig={chartConfig}
+              accessor={"transaction_amount"}
+              backgroundColor={"transparent"}
+              paddingLeft={"15"}
+              center={[10, 0]}
+            />
+
+            {/* <Image
+              source={require("../../assets/images/icons/two-sided.png")}
+              style={styles.twoSidedArrow}
+            /> */}
+          </View>
+        )}
       </ScrollView>
     </TouchableWithoutFeedback>
   );
@@ -417,6 +513,15 @@ const styles = StyleSheet.create({
   },
   incomeText: {
     fontFamily: "Aller_Rg",
+  },
+  chartContainer: {
+    flex: 1,
+    marginBottom: 100,
+  },
+  twoSidedArrow: {
+    width: 50,
+    height: 50,
+    alignSelf: "center",
   },
 });
 

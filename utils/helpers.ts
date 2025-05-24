@@ -1,5 +1,6 @@
 import * as SecureStore from "expo-secure-store";
 import { jwtDecode } from "jwt-decode";
+import { COLORS } from "./constants";
 
 export const checkToken = async () => {
   const storedToken = await SecureStore.getItemAsync("token");
@@ -27,4 +28,19 @@ export const checkToken = async () => {
     // No token found
     return false;
   }
+};
+
+export const chartConfig = {
+  backgroundGradientFrom: "#fff",
+  backgroundGradientFromOpacity: 0,
+  backgroundGradientTo: "#fff",
+  backgroundGradientToOpacity: 5,
+  color: (opacity = 1) => COLORS["primary-1"],
+  strokeWidth: 2, // optional, default 3
+  barPercentage: 0.5,
+  useShadowColorFromDataset: false, // optional
+  propsForLabels: {
+    color: "#000",
+    fontFamily: "Aller_Rg",
+  },
 };

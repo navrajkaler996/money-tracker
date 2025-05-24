@@ -72,6 +72,29 @@ export const DAYS = [
   { label: "30", value: 30 },
 ];
 
+export const CHART_COLORS = [
+  "#FF0000", // Red
+  "#00FF00", // Lime
+  "#0000FF", // Blue
+  "#FFFF00", // Yellow
+  "#FF00FF", // Magenta
+  "#00FFFF", // Cyan
+  "#FFA500", // Orange
+  "#800080", // Purple
+  "#008000", // Dark Green
+  "#000080", // Navy
+  "#FFC0CB", // Pink
+  "#8B0000", // Dark Red
+  "#B8860B", // Dark Goldenrod
+  "#20B2AA", // Light Sea Green
+  "#2E8B57", // Sea Green
+  "#FF1493", // Deep Pink
+  "#ADFF2F", // Green Yellow
+  "#1E90FF", // Dodger Blue
+  "#A52A2A", // Brown
+  "#DC143C", // Crimson
+];
+
 //Functions
 
 export const getMonth = (month: string) => MONTHS[Number(month)];
