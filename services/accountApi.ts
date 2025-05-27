@@ -21,7 +21,19 @@ export const accountApi = createApi({
         method: "GET",
       }),
     }),
+    //Editing account using account_id
+    editAccount: builder.mutation({
+      query: ({ account_id, payload }) => ({
+        url: `/edit/${account_id}`,
+        method: "PATCH",
+        body: payload,
+      }),
+    }),
   }),
 });
 
-export const { useInsertAccountsMutation, useGetAccountsQuery } = accountApi;
+export const {
+  useInsertAccountsMutation,
+  useGetAccountsQuery,
+  useEditAccountMutation,
+} = accountApi;

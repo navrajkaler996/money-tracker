@@ -20,19 +20,13 @@ import Input from "@/components/Input";
 import TransactionsFlatList from "@/components/TransactionsFlatList";
 import Button from "@/components/Button";
 
-import { useInsertAccountsMutation } from "@/services/accountApi";
+import { useEditAccountMutation } from "@/services/accountApi";
 
-import {
-  CHART_COLORS,
-  COLORS,
-  ERRORS,
-  getRandomColor,
-  MONTHS,
-  STYLES,
-} from "@/utils/constants";
+import { CHART_COLORS, COLORS, ERRORS } from "@/utils/constants";
 
 import { useGetTransactionsByAccountIdQuery } from "@/services/transactionApi";
 import { useGetCategoriesByUserIdQuery } from "@/services/categoryApi";
+
 import { chartConfig } from "@/utils/helpers";
 
 const windowHeight = Dimensions.get("window").height;
@@ -46,13 +40,13 @@ const editAccount = () => {
 
   //API for inserting accounts
   const [
-    insertAccounts,
+    editAccount,
     {
-      isLoading: insertAccountsIsLoading,
-      error: insertAccountsError,
-      data: insertAccountsData,
+      isLoading: editAccountsIsLoading,
+      error: editAccountsError,
+      data: editAccountsData,
     },
-  ] = useInsertAccountsMutation();
+  ] = useEditAccountMutation();
 
   const {
     data: transactionsData,
@@ -78,7 +72,6 @@ const editAccount = () => {
   const [showIncomeForm, setShowIncomeForm] = useState(false);
 
   const [selectedAccountType, setSelectedAccountType] = useState("debit");
-  const [selectedBankName, setSelectedBankName] = useState("");
   const [totalAmount, setTotalAmount] = useState(0);
   const [availableCredit, setAvailableCredit] = useState(0);
   const [creditLimit, setCreditLimit] = useState(0);
@@ -90,16 +83,16 @@ const editAccount = () => {
   });
 
   useEffect(() => {
-    if (!insertAccountsIsLoading && insertAccountsData) {
+    if (!editAccountsIsLoading && editAccountsData) {
       router.push({
         pathname: "/(tabs)/accounts",
         params: {
           status: "success",
-          message: "account added!",
+          message: "account updated!",
         },
       });
     }
-  }, [insertAccountsData]);
+  }, [editAccountsData]);
 
   //This useFocusEffect refetchs the transactionData
   useFocusEffect(
@@ -121,18 +114,26 @@ const editAccount = () => {
     }, [transactionsData, categoriesData])
   );
 
-  const handleAddAccount = () => {
+  useFocusEffect(
+    useCallback(() => {
+      if (totalAmount !== account?.total_amount) {
+        setTotalAmount(Number(account.total_amount));
+      }
+    }, [])
+  );
+
+  const handleUpdateAccount = () => {
     let isValid = true;
     const newErrors: any = {};
 
-    // Validation for bankName and creditLimit
-    if (
-      (selectedAccountType === "credit" || selectedAccountType === "debit") &&
-      selectedBankName?.length === 0
-    ) {
-      newErrors.bankName = ERRORS.NOT_EMPTY;
-      isValid = false;
-    }
+    // // Validation for bankName and creditLimit
+    // if (
+    //   (selectedAccountType === "credit" || selectedAccountType === "debit") &&
+    //   selectedBankName?.length === 0
+    // ) {
+    //   newErrors.bankName = ERRORS.NOT_EMPTY;
+    //   isValid = false;
+    // }
 
     if (selectedAccountType === "credit" && creditLimit === 0) {
       newErrors.creditLimit = ERRORS.NOT_EMPTY;
@@ -156,51 +157,46 @@ const editAccount = () => {
 
     let payload: any = [];
 
-    // Add debit account
+    // Update debit account
     if (selectedAccountType === "debit") {
-      if (selectedBankName?.length > 0 && totalAmount >= 0) {
-        payload = [
-          {
-            account_type: "debit",
-            available_credit: null,
-            bank_name: selectedBankName,
-            credit_limit: null,
-            total_amount: Number(totalAmount),
-          },
-        ];
+      if (totalAmount >= 0) {
+        payload = {
+          total_amount: Number(totalAmount),
+        };
       }
     }
 
-    // Add cash account
-    else if (selectedAccountType === "cash" && totalAmount >= 0) {
-      payload = [
-        {
-          account_type: "cash",
-          available_credit: null,
-          bank_name: null,
-          credit_limit: null,
-          total_amount: totalAmount,
-        },
-      ];
-    }
+    // // Add cash account
+    // else if (selectedAccountType === "cash" && totalAmount >= 0) {
+    //   payload = [
+    //     {
+    //       account_type: "cash",
+    //       available_credit: null,
+    //       bank_name: null,
+    //       credit_limit: null,
+    //       total_amount: totalAmount,
+    //     },
+    //   ];
+    // }
 
-    // Add credit account
-    else if (selectedAccountType === "credit" && creditLimit >= 0) {
-      payload = [
-        {
-          account_type: "credit",
-          available_credit: Number(availableCredit),
-          bank_name: selectedBankName,
-          credit_limit: Number(creditLimit),
-          total_amount: null,
-        },
-      ];
-    }
+    // // Add credit account
+    // else if (selectedAccountType === "credit" && creditLimit >= 0) {
+    //   payload = [
+    //     {
+    //       account_type: "credit",
+    //       available_credit: Number(availableCredit),
+    //       bank_name: selectedBankName,
+    //       credit_limit: Number(creditLimit),
+    //       total_amount: null,
+    //     },
+    //   ];
+    // }
 
-    insertAccounts({ userId: userId, payload });
+    editAccount({ account_id: account?.account_id, payload });
   };
 
-  const createTransaction = (transactionData: any, categoriesData: any) => {
+  //Function to create a list of transactions
+  const createTransaction = (transactionsData: any, categoriesData: any) => {
     let transaction = transactionsData?.map((transaction: any) => {
       const category = categoriesData.find(
         (cat: any) => cat.id === transaction.category_id
@@ -219,23 +215,7 @@ const editAccount = () => {
     return transaction;
   };
 
-  const handleArrow = () => {
-    if (transactionListLimit === -1) setTransactionListLimit(2);
-    else setTransactionListLimit(-1);
-  };
-
-  const handleAddIncome = () => {
-    router.push({
-      pathname: "/incomeOptions/addIncome",
-      params: {
-        account: JSON.stringify(account),
-        userId,
-      },
-    });
-  };
-
-  //console.log(transactionsData[0]);
-
+  //Function to create the data for pie chart
   const createDataForPieChart = (
     transactionsData: any,
     categoriesData: any
@@ -263,6 +243,7 @@ const editAccount = () => {
     return data;
   };
 
+  //Function to create the data for bar chart
   const createDataForBarChart = (transactionData: any) => {
     const month = new Date().getMonth();
 
@@ -294,10 +275,26 @@ const editAccount = () => {
     });
 
     data.datasets[0].data = datasets;
-    console.log(datasets);
+
     return data;
   };
 
+  //Function triggers when arrow is clicked to expand or limit the transaction list
+  const handleArrow = () => {
+    if (transactionListLimit === -1) setTransactionListLimit(2);
+    else setTransactionListLimit(-1);
+  };
+
+  //Function to add income
+  const handleAddIncome = () => {
+    router.push({
+      pathname: "/incomeOptions/addIncome",
+      params: {
+        account: JSON.stringify(account),
+        userId,
+      },
+    });
+  };
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <ScrollView
@@ -315,7 +312,7 @@ const editAccount = () => {
 
           <View style={styles.rightContainer}></View>
         </View>
-        {insertAccountsIsLoading && (
+        {editAccountsIsLoading && (
           <View
             style={{
               flex: 1,
@@ -326,7 +323,7 @@ const editAccount = () => {
             <ActivityIndicator size="large" color={COLORS["primary-3"]} />
           </View>
         )}
-        {!insertAccountsIsLoading && (
+        {!editAccountsIsLoading && (
           <View style={styles.formContainer}>
             {(selectedAccountType === "debit" ||
               selectedAccountType === "cash") && (
@@ -344,30 +341,11 @@ const editAccount = () => {
                 label={"Total amount"}
                 numeric={true}
                 onChangeText={setTotalAmount}
-                value={account.total_amount}
+                value={totalAmount}
                 error={undefined}
               />
             )}
-            {/* {selectedAccountType === "credit" && (
-              <Input
-                label={"Available credit"}
-                placeholder={"Enter available credit"}
-                numeric={true}
-                onChangeText={setAvailableCredit}
-                value={availableCredit}
-                error={undefined}
-              />
-            )} */}
-            {/* {selectedAccountType === "credit" && (
-              <Input
-                label={"Credit limit"}
-                placeholder={"Enter credit limit"}
-                numeric={true}
-                onChangeText={setCreditLimit}
-                value={creditLimit}
-                error={undefined}
-              />
-            )} */}
+
             <TouchableOpacity
               style={styles.incomeContainer}
               onPress={handleAddIncome}>
@@ -382,7 +360,7 @@ const editAccount = () => {
             <Button
               text="Edit account"
               buttonStyles={{ marginTop: 10, marginBottom: 30 }}
-              onPress={handleAddAccount}
+              onPress={handleUpdateAccount}
             />
           </View>
         )}
@@ -408,24 +386,38 @@ const editAccount = () => {
             </TouchableOpacity>
           </View>
         )}
-        {transactionsData?.length > 0 && categoriesData?.length > 0 && (
-          <View style={styles.chartContainer}>
-            <PieChart
-              data={createDataForPieChart(transactionsData, categoriesData)}
-              width={windowWidth * 0.8}
-              height={220}
-              chartConfig={chartConfig}
-              accessor={"transaction_amount"}
-              backgroundColor={"transparent"}
-              paddingLeft={"15"}
-              center={[10, 0]}
-            />
+        {transactionIsLoading ? (
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              height: windowHeight,
+            }}>
+            <ActivityIndicator size="large" color={COLORS["primary-3"]} />
+          </View>
+        ) : (
+          !transactionIsLoading &&
+          transactionsData?.length > 0 &&
+          categoriesData?.length > 0 && (
+            <View style={styles.chartContainer}>
+              <PieChart
+                data={createDataForPieChart(transactionsData, categoriesData)}
+                width={windowWidth * 0.8}
+                height={220}
+                chartConfig={chartConfig}
+                accessor={"transaction_amount"}
+                backgroundColor={"transparent"}
+                paddingLeft={"15"}
+                center={[10, 0]}
+              />
 
-            {/* <Image
+              {/* <Image
               source={require("../../assets/images/icons/two-sided.png")}
               style={styles.twoSidedArrow}
             /> */}
-          </View>
+            </View>
+          )
         )}
       </ScrollView>
     </TouchableWithoutFeedback>

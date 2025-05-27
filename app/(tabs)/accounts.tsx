@@ -44,6 +44,8 @@ const AccountsScreen = () => {
   const [userId, setUserId] = useState();
   const { message, status } = useLocalSearchParams();
 
+  console.log("aaa", userId);
+
   const {
     data: accountsData,
     isLoading: accountsIsLoading,
