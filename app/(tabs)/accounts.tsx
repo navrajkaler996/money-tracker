@@ -1,33 +1,23 @@
-import { useAuth } from "@/context/AuthContext";
-import {
-  useGetAccountsQuery,
-  useInsertAccountsMutation,
-} from "@/services/accountApi";
-import { useGetExpensesByUserIdQuery } from "@/services/expenseApi";
-import {
-  useGetTransactionsByCategoryIdQuery,
-  useGetTransactionsByUserIdQuery,
-} from "@/services/transactionApi";
-import { COLORS, STYLES } from "@/utils/constants";
-import { LinearGradient } from "expo-linear-gradient";
-import {
-  useFocusEffect,
-  useLocalSearchParams,
-  useNavigation,
-  useRouter,
-} from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Dimensions,
   Image,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
+import { LinearGradient } from "expo-linear-gradient";
+
+import { useGetAccountsQuery } from "@/services/accountApi";
+import { useGetTransactionsByUserIdQuery } from "@/services/transactionApi";
+
+import { useAuth } from "@/context/AuthContext";
+import { COLORS, STYLES } from "@/utils/constants";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
@@ -43,8 +33,6 @@ const AccountsScreen = () => {
   const { user } = useAuth();
   const [userId, setUserId] = useState();
   const { message, status } = useLocalSearchParams();
-
-  console.log("aaa", userId);
 
   const {
     data: accountsData,
@@ -261,7 +249,18 @@ const AccountsScreen = () => {
         </LinearGradient>
       </View>
       <ScrollView>
-        {debitAccounts?.length > 0 && (
+        {accountsIsLoading && (
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              height: windowHeight,
+            }}>
+            <ActivityIndicator size="large" color={COLORS["primary-3"]} />
+          </View>
+        )}
+        {!accountsIsLoading && debitAccounts?.length > 0 && (
           <View style={styles.accountContainer}>
             <View style={styles.accountTypeContainer}>
               <Text style={styles.accountType}>Debit accounts</Text>
@@ -305,7 +304,7 @@ const AccountsScreen = () => {
             })}
           </View>
         )}
-        {creditAccounts?.length > 0 && (
+        {!accountsIsLoading && creditAccounts?.length > 0 && (
           <View style={styles.accountContainer}>
             <View style={styles.accountTypeContainer}>
               <Text style={styles.accountType}>Credit accounts</Text>
@@ -342,7 +341,7 @@ const AccountsScreen = () => {
             })}
           </View>
         )}
-        {cashAccount?.length > 0 && (
+        {!accountsIsLoading && cashAccount?.length > 0 && (
           <View style={styles.accountContainer}>
             <View style={styles.accountTypeContainer}>
               <Text style={styles.accountType}>Cash account</Text>
