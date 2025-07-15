@@ -173,8 +173,6 @@ const RecentTransactions = () => {
 
   const getMonth = (month: string) => MONTHS[Number(month)];
 
-  console.log("asasa", transaction);
-
   return (
     <View style={styles.container}>
       {/* header */}

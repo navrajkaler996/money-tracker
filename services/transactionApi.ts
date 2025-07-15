@@ -12,6 +12,8 @@ export const transactionApi = createApi({
 
         if (month && year) {
           url += `month=${month}&year=${year}`;
+        } else if (year) {
+          url += `year=${year}`;
         }
 
         if (date) {
