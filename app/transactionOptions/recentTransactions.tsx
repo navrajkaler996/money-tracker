@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Dimensions,
-  FlatList,
   Image,
   Pressable,
   ScrollView,
@@ -16,7 +15,11 @@ import { useGetCategoriesByUserIdQuery } from "@/services/categoryApi";
 import { useGetTransactionsByUserIdQuery } from "@/services/transactionApi";
 
 import { ACCOUNT_TYPES, COLORS, MONTHS } from "@/utils/constants";
-import { useLocalSearchParams, useNavigation } from "expo-router";
+import {
+  useFocusEffect,
+  useLocalSearchParams,
+  useNavigation,
+} from "expo-router";
 import TransactionsFlatList from "@/components/TransactionsFlatList";
 import { useAuth } from "@/context/AuthContext";
 
@@ -53,7 +56,7 @@ const RecentTransactions = () => {
     data: transactionsData,
     isLoading: transactionIsLoading,
     error: transactionError,
-    refetch: transactionRefect,
+    refetch: transactionRefetch,
   } = useGetTransactionsByUserIdQuery({
     userId: userId,
     ...transactionQueryParams,
@@ -90,6 +93,12 @@ const RecentTransactions = () => {
       calculateExpenses(transactionsData);
     }
   }, [transactionsData, categoriesData, accountsData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      transactionRefetch();
+    }, [])
+  );
 
   //Function to create transactions
   const createTransaction = (
@@ -163,6 +172,8 @@ const RecentTransactions = () => {
   };
 
   const getMonth = (month: string) => MONTHS[Number(month)];
+
+  console.log("asasa", transaction);
 
   return (
     <View style={styles.container}>
