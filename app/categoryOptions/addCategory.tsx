@@ -20,12 +20,16 @@ import Button from "@/components/Button";
 import { useInsertAccountsMutation } from "@/services/accountApi";
 import { useNavigation, useRouter } from "expo-router";
 import { useInsertCategoriesMutation } from "@/services/categoryApi";
+import { useAuth } from "@/context/AuthContext";
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
 const addAccount = () => {
   const router = useRouter();
+
+  const { user, token } = useAuth();
+  const { userId } = user;
 
   //API for inserting categories
   const [
@@ -53,9 +57,10 @@ const addAccount = () => {
 
   const handleAddCategory = () => {
     if (categoryName?.length > 0)
-      insertCategories({ userId: 59, payload: [categoryName] });
+      insertCategories({ userId: userId, payload: [categoryName] });
   };
 
+  console.log(insertCategoriesData, insertCategoriesError);
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View style={styles.container}>
