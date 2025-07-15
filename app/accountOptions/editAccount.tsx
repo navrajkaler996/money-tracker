@@ -71,7 +71,7 @@ const editAccount = () => {
   //State to show income form
   const [showIncomeForm, setShowIncomeForm] = useState(false);
 
-  const [selectedAccountType, setSelectedAccountType] = useState("debit");
+  const [selectedAccountType, setSelectedAccountType] = useState("");
   const [totalAmount, setTotalAmount] = useState(0);
   const [availableCredit, setAvailableCredit] = useState(0);
   const [creditLimit, setCreditLimit] = useState(0);
@@ -99,6 +99,7 @@ const editAccount = () => {
     useCallback(() => {
       transactionRefetch();
       createDataForBarChart(transactionsData);
+      if (account?.account_type) setSelectedAccountType(account?.account_type);
     }, [])
   );
 
@@ -119,6 +120,12 @@ const editAccount = () => {
       if (totalAmount !== account?.total_amount) {
         setTotalAmount(Number(account.total_amount));
       }
+
+      if (availableCredit !== account?.available_credit)
+        setAvailableCredit(account?.available_credit);
+
+      if (creditLimit !== account?.credit_limit)
+        setCreditLimit(account?.credit_limit);
     }, [])
   );
 
@@ -165,6 +172,21 @@ const editAccount = () => {
         };
       }
     }
+    // Add credit account
+    else if (selectedAccountType === "credit" && creditLimit >= 0) {
+      payload = {
+        available_credit: Number(availableCredit),
+        credit_limit: Number(creditLimit),
+        total_amount: null,
+      };
+    } else if (selectedAccountType === "cash" && totalAmount >= 0) {
+      payload = {
+        available_credit: null,
+        bank_name: null,
+        credit_limit: null,
+        total_amount: Number(totalAmount),
+      };
+    }
 
     // // Add cash account
     // else if (selectedAccountType === "cash" && totalAmount >= 0) {
@@ -175,19 +197,6 @@ const editAccount = () => {
     //       bank_name: null,
     //       credit_limit: null,
     //       total_amount: totalAmount,
-    //     },
-    //   ];
-    // }
-
-    // // Add credit account
-    // else if (selectedAccountType === "credit" && creditLimit >= 0) {
-    //   payload = [
-    //     {
-    //       account_type: "credit",
-    //       available_credit: Number(availableCredit),
-    //       bank_name: selectedBankName,
-    //       credit_limit: Number(creditLimit),
-    //       total_amount: null,
     //     },
     //   ];
     // }
@@ -325,16 +334,14 @@ const editAccount = () => {
         )}
         {!editAccountsIsLoading && (
           <View style={styles.formContainer}>
-            {(selectedAccountType === "debit" ||
-              selectedAccountType === "cash") && (
-              <Input
-                label={"Account type"}
-                numeric={true}
-                value={account.account_type}
-                error={undefined}
-                editable={false}
-              />
-            )}
+            <Input
+              label={"Account type"}
+              numeric={true}
+              value={account.account_type}
+              error={undefined}
+              editable={false}
+            />
+
             {(selectedAccountType === "debit" ||
               selectedAccountType === "cash") && (
               <Input
@@ -342,6 +349,26 @@ const editAccount = () => {
                 numeric={true}
                 onChangeText={setTotalAmount}
                 value={totalAmount}
+                error={undefined}
+              />
+            )}
+            {selectedAccountType === "credit" && (
+              <Input
+                label={"Available credit"}
+                placeholder={"Enter available credit"}
+                numeric={true}
+                onChangeText={setAvailableCredit}
+                value={availableCredit}
+                error={undefined}
+              />
+            )}
+            {selectedAccountType === "credit" && (
+              <Input
+                label={"Credit limit"}
+                placeholder={"Enter credit limit"}
+                numeric={true}
+                onChangeText={setCreditLimit}
+                value={creditLimit}
                 error={undefined}
               />
             )}

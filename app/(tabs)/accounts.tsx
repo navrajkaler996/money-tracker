@@ -311,7 +311,8 @@ const AccountsScreen = () => {
             </View>
             {creditAccounts?.map((account: any, i: number) => {
               return (
-                <View
+                <TouchableOpacity
+                  onPress={() => handleEditAccount(account)}
                   style={
                     i !== creditAccounts?.length - 1
                       ? styles.account
@@ -336,7 +337,7 @@ const AccountsScreen = () => {
                       </Text>
                     </View>
                   </View>
-                </View>
+                </TouchableOpacity>
               );
             })}
           </View>
@@ -348,7 +349,8 @@ const AccountsScreen = () => {
             </View>
             {cashAccount?.map((account: any, i: number) => {
               return (
-                <View
+                <TouchableOpacity
+                  onPress={() => handleEditAccount(account)}
                   style={
                     i !== cashAccount?.length - 1
                       ? styles.account
@@ -378,7 +380,7 @@ const AccountsScreen = () => {
                       </Text>
                     </View>
                   </View>
-                </View>
+                </TouchableOpacity>
               );
             })}
           </View>
