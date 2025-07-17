@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
-import { Animated, Dimensions, StyleSheet, Text, View } from "react-native";
-
+import {
+  Animated,
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import * as SecureStore from "expo-secure-store";
@@ -25,30 +31,29 @@ function WelcomeScreen() {
   const router = useRouter();
   const { login } = useAuth();
 
-  //API to register user
-  const [createUser, { isLoading, error, data: createUserData }] =
-    useCreateUserMutation();
+  // API to register user
+  const [
+    createUser,
+    { isLoading: isCreatingUser, error: createUserError, data: createUserData },
+  ] = useCreateUserMutation();
 
-  //API to login user
+  // API to login user
   const [
     loginUser,
-    {
-      isLoading: loginUserIsLoading,
-      error: loginUserError,
-      data: loginUserData,
-    },
+    { isLoading: isLoggingIn, error: loginUserError, data: loginUserData },
   ] = useLoginUserMutation();
 
-  //States for form
+  // States for form
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
+  const [globalError, setGlobalError] = useState<string | null>(null);
 
-  //Errors for form
+  // Errors for form
   const [errors, setErrors] = useState({
-    email: null,
-    firstName: null,
-    password: null,
+    email: null as string | null,
+    firstName: null as string | null,
+    password: null as string | null,
   });
 
   const [isRegistered, setIsRegistered] = useState(false);
@@ -57,7 +62,7 @@ function WelcomeScreen() {
   const [registerAnim] = useState(new Animated.Value(0));
   const [loginAnim] = useState(new Animated.Value(0));
 
-  //USEEFFECTS
+  // USEEFFECTS
 
   useEffect(() => {
     const handleCheckToken = async () => {
@@ -67,54 +72,79 @@ function WelcomeScreen() {
           pathname: "/(tabs)",
         });
       } else {
-        SecureStore.deleteItemAsync("token");
-        SecureStore.deleteItemAsync("userId");
-        SecureStore.deleteItemAsync("email");
-
+        await SecureStore.deleteItemAsync("token");
+        await SecureStore.deleteItemAsync("userId");
+        await SecureStore.deleteItemAsync("email");
         console.log("Token is expired or not found");
       }
     };
     handleCheckToken();
   }, []);
 
-  //useEffect to store token in context
-  /////and navigate to newUser screen
-  /////Triggers when user creates a new account
+  // Handle API errors
   useEffect(() => {
-    console.log("asas", isLoggedIn, loginUserData?.access_token);
+    if (createUserError) {
+      const errorMessage =
+        "data" in createUserError &&
+        createUserError.data &&
+        typeof createUserError.data === "object" &&
+        "message" in createUserError.data
+          ? (createUserError.data as { message: string }).message
+          : "Failed to create account. Please try again.";
+      setGlobalError(errorMessage);
+    } else if (loginUserError) {
+      const errorMessage =
+        "data" in loginUserError &&
+        loginUserError.data &&
+        typeof loginUserError.data === "object" &&
+        "message" in loginUserError.data
+          ? (loginUserError.data as { message: string }).message
+          : "Failed to log in. Please check your credentials.";
+      setGlobalError(errorMessage);
+    } else {
+      setGlobalError(null);
+    }
+  }, [createUserError, loginUserError]);
+
+  // Handle successful registration or login
+  useEffect(() => {
     if (isRegistered && createUserData?.access_token) {
       login(createUserData);
-
       router.push({
         pathname: "/newUser",
         params: {
-          user: createUserData,
+          user: JSON.stringify(createUserData),
         },
       });
     } else if (isLoggedIn && loginUserData?.access_token) {
       login(loginUserData);
-
       router.push({
         pathname: "/(tabs)",
         params: {
-          user: loginUserData,
+          user: JSON.stringify(loginUserData),
         },
       });
     }
   }, [createUserData, isRegistered, loginUserData, isLoggedIn]);
 
-  //useEffect to track if info in input fields is valid or not
+  // Validate form inputs
   useEffect(() => {
     validateForm();
   }, [email, password, firstName]);
 
-  //FUNCTIONS
+  // FUNCTIONS
 
-  //Open the view according to the button pressed on welcome screen
-  const handleNAvigation = (path: string) => {
+  // Open the view according to the button pressed on welcome screen
+  const handleNavigation = (path: string) => {
+    setGlobalError(null); // Clear global error on navigation
     if (path === "register") {
       Animated.timing(registerAnim, {
         toValue: windowHeight * 0.8,
+        duration: 200,
+        useNativeDriver: false,
+      }).start();
+      Animated.timing(loginAnim, {
+        toValue: windowHeight * 0,
         duration: 200,
         useNativeDriver: false,
       }).start();
@@ -124,117 +154,77 @@ function WelcomeScreen() {
         duration: 200,
         useNativeDriver: false,
       }).start();
+      Animated.timing(registerAnim, {
+        toValue: windowHeight * 0,
+        duration: 200,
+        useNativeDriver: false,
+      }).start();
     }
   };
 
-  //Function to validate form
+  // Function to validate form
   const validateForm = () => {
-    let error = false;
-    if (errors.firstName === null && firstName?.length === 0) return;
-    else {
-      if (firstName?.length < 1) {
-        setErrors((prev: any) => {
-          return {
-            ...prev,
-            firstName: ERRORS.NOT_EMPTY,
-          };
-        });
-        error = true;
-      } else {
-        setErrors((prev: any) => {
-          return {
-            ...prev,
-            firstName: false,
-          };
-        });
-        error = false;
-      }
+    const newErrors = {
+      email: null as string | null,
+      firstName: null as string | null,
+      password: null as string | null,
+    };
+
+    // Validate firstName (only for registration)
+    if (firstName.length === 0) {
+      newErrors.firstName = ERRORS.NOT_EMPTY;
     }
 
-    if (errors.email === null && email?.length === 0) return;
-    else {
-      if (email?.length < 1) {
-        setErrors((prev: any) => {
-          return {
-            ...prev,
-            email: ERRORS.NOT_EMPTY,
-          };
-        });
-        error = true;
-      } else {
-        setErrors((prev: any) => {
-          return {
-            ...prev,
-            email: false,
-          };
-        });
-        error = false;
-      }
-      if (!/\S+@\S+\.\S+/.test(email)) {
-        setErrors((prev: any) => {
-          return {
-            ...prev,
-            email: ERRORS.INVALID_EMAIL,
-          };
-        });
-        error = true;
-      } else {
-        setErrors((prev: any) => {
-          return {
-            ...prev,
-            email: false,
-          };
-        });
-        error = false;
-      }
+    // Validate email
+    if (email.length === 0) {
+      newErrors.email = ERRORS.NOT_EMPTY;
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = ERRORS.INVALID_EMAIL;
     }
 
-    if (errors.password === null && password?.length === 0) return;
-    else {
-      if (password?.length < 6) {
-        setErrors((prev: any) => {
-          return {
-            ...prev,
-            password: ERRORS.SHORT_PASSWORD,
-          };
-        });
-        error = true;
-      } else {
-        setErrors((prev: any) => {
-          return {
-            ...prev,
-            password: false,
-          };
-        });
-        error = false;
-      }
+    // Validate password
+    if (password.length === 0) {
+      newErrors.password = ERRORS.NOT_EMPTY;
+    } else if (password.length < 6) {
+      newErrors.password = ERRORS.SHORT_PASSWORD;
     }
 
-    return error;
+    setErrors(newErrors);
   };
 
-  //Function to handle user sign up, i.e. create a new account
+  // Function to handle user sign up
   const handleSignUp = () => {
     if (!errors.email && !errors.firstName && !errors.password) {
       createUser({
-        email: email,
+        email,
         first_name: firstName,
-        password: password,
+        password,
       });
       setIsRegistered(true);
     }
   };
 
+  // Function to handle user login
   const handleLogin = () => {
     if (!errors.email && !errors.password) {
-      console.log("aaa");
       loginUser({
-        email: email,
-        password: password,
+        email,
+        password,
       });
       setIsLoggedIn(true);
     }
   };
+
+  // Check if buttons should be disabled
+  const isSignUpDisabled =
+    !!errors.email ||
+    !!errors.firstName ||
+    !!errors.password ||
+    !email ||
+    !firstName ||
+    !password;
+  const isLoginDisabled =
+    !!errors.email || !!errors.password || !email || !password;
 
   return (
     <View style={styles.container}>
@@ -255,16 +245,12 @@ function WelcomeScreen() {
               borderWidth: 2,
               borderColor: "#fff",
             }}
-            onPress={() => {
-              handleNAvigation("login");
-            }}
+            onPress={() => handleNavigation("login")}
           />
           <Text>OR</Text>
           <Button
             text="Create a new account"
-            onPress={() => {
-              handleNAvigation("register");
-            }}
+            onPress={() => handleNavigation("register")}
           />
         </View>
       </LinearGradient>
@@ -276,6 +262,7 @@ function WelcomeScreen() {
         ]}>
         <View style={styles.formContainer}>
           <Text style={styles.heading}>Create an account</Text>
+          {globalError && <Text style={styles.errorText}>{globalError}</Text>}
           <View style={styles.inputContainer}>
             <Input
               label="First name"
@@ -297,25 +284,27 @@ function WelcomeScreen() {
               value={password}
               onChangeText={setPassword}
               error={errors.password}
+              password={true}
             />
           </View>
           <View style={styles.buttonContainer2}>
             <Button
               text="Sign up"
               onPress={handleSignUp}
-              disabled={
-                errors.email ||
-                errors.firstName ||
-                errors.password ||
-                errors.email === null ||
-                errors.firstName === null ||
-                errors.password === null
-                  ? true
-                  : false
-              }
+              disabled={isSignUpDisabled || isCreatingUser}
             />
-            <View style={styles.divider}></View>
-            <Text>Already have a account? Login</Text>
+            <View style={styles.divider} />
+            <View style={{ flex: 1, alignItems: "center" }}>
+              <Text>Already have an account? </Text>
+              <TouchableOpacity onPress={() => handleNavigation("login")}>
+                <Text
+                  style={{
+                    textDecorationLine: "underline",
+                  }}>
+                  Login
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Animated.View>
@@ -327,7 +316,7 @@ function WelcomeScreen() {
         ]}>
         <View style={styles.formContainer}>
           <Text style={styles.heading}>Login to your account</Text>
-
+          {globalError && <Text style={styles.errorText}>{globalError}</Text>}
           <View style={styles.inputContainer}>
             <Input
               label="Email"
@@ -342,24 +331,27 @@ function WelcomeScreen() {
               value={password}
               onChangeText={setPassword}
               error={errors.password}
+              password={true}
             />
           </View>
-
           <View style={styles.buttonContainer2}>
             <Button
               text="Login"
               onPress={handleLogin}
-              disabled={
-                errors.email ||
-                errors.password ||
-                errors.email !== null ||
-                errors.password !== null
-                  ? true
-                  : false
-              }
+              disabled={isLoginDisabled || isLoggingIn}
             />
-            <View style={styles.divider}></View>
-            <Text>Don't have an account? Sign up</Text>
+            <View style={styles.divider} />
+            <View style={{ flex: 1, alignItems: "center" }}>
+              <Text>Don't have an account? </Text>
+              <TouchableOpacity onPress={() => handleNavigation("register")}>
+                <Text
+                  style={{
+                    textDecorationLine: "underline",
+                  }}>
+                  Sign up
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Animated.View>
@@ -393,7 +385,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     paddingLeft: 10,
   },
-
   button: {
     width: windowWidth * 0.7,
     height: 40,
@@ -412,6 +403,7 @@ const styles = StyleSheet.create({
     color: "red",
     fontSize: 12,
     marginTop: 5,
+    textAlign: "center",
   },
   inputError: {
     borderColor: "red",
@@ -459,7 +451,6 @@ const styles = StyleSheet.create({
   buttonContainer2: {
     alignItems: "center",
     gap: 20,
-
     justifyContent: "flex-end",
   },
   logoContainer: {

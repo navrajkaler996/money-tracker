@@ -19,7 +19,8 @@ interface InputProps {
   error?: string | null;
   value: string;
   textInputStyles?: TextStyle;
-  editable: Boolean;
+  editable: boolean;
+  password: boolean;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -31,6 +32,7 @@ const Input: React.FC<InputProps> = ({
   value,
   textInputStyles,
   editable = true,
+  password = false,
 }) => {
   return (
     <View style={styles.container}>
@@ -52,6 +54,8 @@ const Input: React.FC<InputProps> = ({
         onChangeText={(text) => onChangeText(text)}
         value={String(value)}
         editable={editable}
+        autoCapitalize="none"
+        secureTextEntry={password}
       />
       <Text style={styles.error}>{error}</Text>
     </View>
