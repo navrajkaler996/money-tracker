@@ -81,6 +81,7 @@ function WelcomeScreen() {
   /////and navigate to newUser screen
   /////Triggers when user creates a new account
   useEffect(() => {
+    console.log("asas", isLoggedIn, loginUserData?.access_token);
     if (isRegistered && createUserData?.access_token) {
       login(createUserData);
 
@@ -226,6 +227,7 @@ function WelcomeScreen() {
 
   const handleLogin = () => {
     if (!errors.email && !errors.password) {
+      console.log("aaa");
       loginUser({
         email: email,
         password: password,

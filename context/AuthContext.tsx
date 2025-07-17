@@ -44,10 +44,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     SecureStore.setItemAsync("email", response?.user?.email);
 
     setToken(response?.access_token);
+    // setUser({
+    //   userId: response?.user.id,
+    //   firstName: response?.user.first_name,
+    //   email: response?.user.email,
+    // });
+
     setUser({
-      userId: response?.user.id,
-      firstName: response?.user.first_name,
-      email: response?.user.email,
+      userId: response?.id,
+      firstName: response?.first_name,
+      email: response?.email,
     });
   };
 

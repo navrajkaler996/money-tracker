@@ -60,7 +60,6 @@ const addAccount = () => {
       insertCategories({ userId: userId, payload: [categoryName] });
   };
 
-  console.log(insertCategoriesData, insertCategoriesError);
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View style={styles.container}>
