@@ -46,7 +46,7 @@ function SettingsScreen({ navigation }: any) {
       await SecureStore.deleteItemAsync("email");
       console.log("User logged out successfully");
       router.push({
-        pathname: "/",
+        pathname: "/welcomeScreen",
       });
     } catch (error) {
       console.error("Error during logout:", error);
